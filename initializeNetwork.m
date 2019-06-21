@@ -23,15 +23,14 @@ function cellInfo = initializeNetwork(externalNodeCount)
   % NOTE: still unsure which values are given and which are calculated
   cellInfo.externalNodeCount = externalNodeCount;
   cellInfo.refLength = 3; % placeholder
-  cellInfo.refArea = 3; % placeholder
   cellInfo.tensions = []; % ? maybe ?
   cellInfo.lengths = []; 
-  
-  % used ONLY for determining internalRefLength (from Barber's code)
-  cellInfo.lengthScale = 12.4/2; 
+  cellInfo.radius = 12.4/2; 
+  cellInfo.refArea = pi*cellInfo.radius^2;
   
   % distance from center to the external nodes
-  cellInfo.internalRefLength = sqrt(2*pi*cellInfo.lengthScale^2/cellInfo.externalNodeCount/sin(2*pi/cellInfo.externalNodeCount)); 
+  cellInfo.internalRefLength = sqrt(2*pi*cellInfo.radius^2/cellInfo.externalNodeCount/sin(2*pi/cellInfo.externalNodeCount)); 
+  cellInfo.externalRefLength = 2*sin(2*pi/cellInfo.externalNodeCount/2)*cellInfo.internalRefLength;
   
   % set up outer circle
   nodeAngles = linspace(0, 2*pi, cellInfo.externalNodeCount+1)';
@@ -39,9 +38,7 @@ function cellInfo = initializeNetwork(externalNodeCount)
   cellInfo.xPosition = bsxfun(@plus, 0, cellInfo.internalRefLength*cos(nodeAngles));
   cellInfo.yPosition = bsxfun(@plus, 0, cellInfo.internalRefLength*sin(nodeAngles));
   
-  % complete initialization of the 'cellInfo' struct
-  % NOTE: still unsure of return type of 'createMesh()' function
-  cellInfo = createMesh(cellInfo);
+  cellInfo = setupInteriorNodes(cellInfo);
   plot(cellInfo.xPosition, cellInfo.yPosition);
 end
 
@@ -54,59 +51,51 @@ function cellInfo = createMesh(cellInfo)
 end
 
 %{
-Barber's function, needs some adaptation...
+Barber's function, (somewhat) adapted to this program.
+NOTE: Ideally, more variable names will be made more descriptive.
 %}
-function cellInfo = setup_int_nodes(cellInfo)
+function cellInfo = setupInteriorNodes(cellInfo)
   % STUB
-  if cellInfo.mult_int_nodes
-    boungeominfo = [2; cellInfo.n_enodes; cellInfo.xn; cellInfo.yn];
-    nameofbound = ['cell']';
-    %  One can use set formulas to intersect and union bounded regions,
-    %  but we just have one bounded region here
-    setformulas = 'cell';
-    [dl,bt] = decsg(boungeominfo,setformulas,nameofbound);
-    pdegplot(dl,'EdgeLabels','on','FaceLabels','on');
-    model = createpde;
-    geometryFromEdges(model,dl);
-    generateMesh(model,'Hmax',cellInfo.loref','Hmin',cellInfo.loref,'Hgrad',1,...
-      'GeometricOrder','linear');
-    pdemesh(model);
+  boungeominfo = [2; cellInfo.externalNodeCount; cellInfo.xPosition; cellInfo.yPosition];
+  nameofbound = ['cell']';
+  %  One can use set formulas to intersect and union bounded regions,
+  %  but we just have one bounded region here
+  setformulas = 'cell';
+  [dl,bt] = decsg(boungeominfo,setformulas,nameofbound);
+  pdegplot(dl,'EdgeLabels','on','FaceLabels','on');
+  model = createpde;
+  geometryFromEdges(model,dl);
+  generateMesh(model,'Hmax',cellInfo.externalRefLength','Hmin',cellInfo.externalRefLength,'Hgrad',1,...
+    'GeometricOrder','linear');
+  pdemesh(model);
     
-    tol = 1e-12;
-    [a,b] = ismembertol([cellInfo.xn,cellInfo.yn],model.Mesh.Nodes',tol,'ByRows',true);
-    if ~isequal(b,[1:cellInfo.n_enodes]')
-      keyboard;
-    end
-    
-    %  Redefine c.xn to correspond to both exterior and interior nodes
-    cellInfo.xn = model.Mesh.Nodes(1,:)';
-    cellInfo.yn = model.Mesh.Nodes(2,:)';
-    
-    %  Element matrix, used to extract reasonable interior elements...shorter
-    %  name, easier to use.
-    elemat = model.Mesh.Elements;
-  else
-    cellInfo.xn = [cellInfo.xn;cellInfo.xm];
-    cellInfo.yn = [cellInfo.yn;cellInfo.ym];
-    
-    for enc = 1:(cellInfo.n_enodes-1)
-      elemat(:,enc) = [enc;cellInfo.n_enodes+1;enc+1];
-    end
-    elemat(:,cellInfo.n_enodes) = [cellInfo.n_enodes;cellInfo.n_enodes+1;1];
+  tol = 1e-12;
+  [a,b] = ismembertol([cellInfo.xPosition,cellInfo.yPosition],model.Mesh.Nodes',tol,'ByRows',true);
+  if ~isequal(b,[1:cellInfo.externalNodeCount]')
+    keyboard;
   end
-  cellInfo.n_nodes = numel(cellInfo.xn);
-  cellInfo.n_inodes = cellInfo.n_nodes-cellInfo.n_enodes;
+    
+  %  Redefine c.xn to correspond to both exterior and interior nodes
+  cellInfo.xPosition = model.Mesh.Nodes(1,:)';
+  cellInfo.yPosition = model.Mesh.Nodes(2,:)';
+    
+  %  Element matrix, used to extract reasonable interior elements...shorter
+  %  name, easier to use.
+  elemat = model.Mesh.Elements;
+
+  cellInfo.totalNodeCount = numel(cellInfo.xPosition);
+  cellInfo.internalNodeCount = cellInfo.totalNodeCount-cellInfo.externalNodeCount;
 
   %  For the "connection cells", for each connected point the first column 
   %  is its indices in terms of xs and ys, the second column is whether
   %  it is an external (false) or internal (true) node, the third column 
   %  is the index in terms of xm-ym or xn-yn depending on whichever is
   %  appropriate according to the second column.
-  for nc = 1:numel(cellInfo.xn)
+  for nc = 1:numel(cellInfo.xPosition)
     tmp = elemat(:,find(any(nc == elemat)));
     tmp2 = setdiff(tmp(:),nc);
-    if nc <= cellInfo.n_enodes
-      nnext = mod(nc,cellInfo.n_enodes)+1;
+    if nc <= cellInfo.externalNodeCount
+      nnext = mod(nc,cellInfo.externalNodeCount)+1;
       start_ind = nnext;
     else
       start_ind = tmp2(1);
@@ -118,7 +107,7 @@ function cellInfo = setup_int_nodes(cellInfo)
       [m,n] = size(tmp);
       tmp = tmp(:,setdiff(1:n,tri_ind));
     end
-    if ispolycw(cellInfo.xn(inds),cellInfo.yn(inds))
+    if ispolycw(cellInfo.xPosition(inds),cellInfo.yPosition(inds))
       inds = circshift(fliplr(inds),1);
     end
     cellInfo.nc{nc} = inds;
@@ -126,11 +115,11 @@ function cellInfo = setup_int_nodes(cellInfo)
   
   %  For plotting later, a list of all the indices corresponding to the
   %  line segments
-  inds = [1:cellInfo.n_enodes]';
-  cellInfo.enlist = [inds,mod(inds,cellInfo.n_enodes)+1];
+  inds = [1:cellInfo.externalNodeCount]';
+  cellInfo.enlist = [inds,mod(inds,cellInfo.externalNodeCount)+1];
   tmp = sort(cellInfo.enlist,2);
   cellInfo.nlist = [];
-  for nc = 1:cellInfo.n_nodes
+  for nc = 1:cellInfo.totalNodeCount
     for cnc = 1:numel(cellInfo.nc{nc})
       cellInfo.nlist = [cellInfo.nlist;nc,cellInfo.nc{nc}(cnc)];
     end
@@ -144,11 +133,11 @@ function cellInfo = setup_int_nodes(cellInfo)
   do_connectivity_plot = false;
   if do_connectivity_plot
     myc = 'rgbmyck'; myc = [myc,myc]; myc = [myc,myc]; myc = [myc,myc];
-    close(figure(1)); figure(1); plot(cellInfo.xn,cellInfo.yn,'k'); hold on;
+    close(figure(1)); figure(1); plot(cellInfo.xPosition,cellInfo.yPosition,'k'); hold on;
     for nc = 1:numel(cellInfo.nc)
       for connc = 1:numel(cellInfo.nc{nc})
-        plot([cellInfo.xn(nc),cellInfo.xn(cellInfo.nc{nc}(connc))],...
-          [cellInfo.yn(nc),cellInfo.yn(cellInfo.nc{nc}(connc))],myc(nc),'LineWidth',2);
+        plot([cellInfo.xPosition(nc),cellInfo.xPosition(cellInfo.nc{nc}(connc))],...
+          [cellInfo.yPosition(nc),cellInfo.yPosition(cellInfo.nc{nc}(connc))],myc(nc),'LineWidth',2);
         pause
       end
     end
@@ -178,8 +167,8 @@ function cellInfo = node_info(cellInfo,s)
   %  for now we just make them 1s.
   for nc = 1:numel(cellInfo.nc)
     cnis = cellInfo.nc{nc};
-    cellInfo.dxs{nc} = cellInfo.xn(cnis)-cellInfo.xn(nc);
-    cellInfo.dys{nc} = cellInfo.yn(cnis)-cellInfo.yn(nc);
+    cellInfo.dxs{nc} = cellInfo.xPosition(cnis)-cellInfo.xPosition(nc);
+    cellInfo.dys{nc} = cellInfo.yPosition(cnis)-cellInfo.yPosition(nc);
     cellInfo.ls{nc} = sqrt(cellInfo.dxs{nc}.^2+cellInfo.dys{nc}.^2);
     cellInfo.txs{nc} = cellInfo.dxs{nc}./cellInfo.ls{nc};
     cellInfo.tys{nc} = cellInfo.dys{nc}./cellInfo.ls{nc};
@@ -214,14 +203,14 @@ function cellInfo = node_info(cellInfo,s)
     sum(cellInfo.alphs{nc});
     %  Between each pair of connections, there is also an element with
     %  associated info (like area of that element)
-    if nc <= cellInfo.n_enodes
-      axs = cellInfo.xn(cnis(1:end-1),:); ays = cellInfo.yn(cnis(1:end-1),:);
-      bxs = cellInfo.xn(cnis(2:end),:); bys = cellInfo.yn(cnis(2:end),:);
+    if nc <= cellInfo.externalNodeCount
+      axs = cellInfo.xPosition(cnis(1:end-1),:); ays = cellInfo.yPosition(cnis(1:end-1),:);
+      bxs = cellInfo.xPosition(cnis(2:end),:); bys = cellInfo.yPosition(cnis(2:end),:);
     else
-      axs = cellInfo.xn(cnis,:); ays = cellInfo.yn(cnis,:);
-      bxs = cellInfo.xn(circshift(cnis,-1),:); bys = cellInfo.yn(circshift(cnis,-1),:);
+      axs = cellInfo.xPosition(cnis,:); ays = cellInfo.yPosition(cnis,:);
+      bxs = cellInfo.xPosition(circshift(cnis,-1),:); bys = cellInfo.yPosition(circshift(cnis,-1),:);
     end
-    xxi = cellInfo.xn(nc)*ones(size(axs)); xyi = cellInfo.yn(nc)*ones(size(bxs));
+    xxi = cellInfo.xPosition(nc)*ones(size(axs)); xyi = cellInfo.yPosition(nc)*ones(size(bxs));
     a = [axs,ays]; b = [bxs,bys]; xi = [xxi,xyi];
     if firsttime
       cellInfo.eareas{nc} = triareainfo(xi,a,b);
@@ -234,8 +223,8 @@ function cellInfo = node_info(cellInfo,s)
     end
   end
   %  Store area and "volume estimate"
-  cellInfo.area = polyarea(cellInfo.xn(1:cellInfo.n_enodes),cellInfo.yn(1:cellInfo.n_enodes));
-  cellInfo.volest = est_3d_volume(cellInfo.xn(1:cellInfo.n_enodes),...
-    cellInfo.yn(1:cellInfo.n_enodes),s.vol_est_type);
+  cellInfo.area = polyarea(cellInfo.xPosition(1:cellInfo.externalNodeCount),cellInfo.yPosition(1:cellInfo.externalNodeCount));
+  cellInfo.volest = est_3d_volume(cellInfo.xPosition(1:cellInfo.externalNodeCount),...
+    cellInfo.yPosition(1:cellInfo.externalNodeCount),s.vol_est_type);
 end
 
