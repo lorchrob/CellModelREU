@@ -15,6 +15,7 @@ Main function to initialize the system
 NOTE: not sure yet if necessary to use all three returned structs
 %}
 function [cellInfo, systemInfo, programInfo] = initializeNetwork(nodeCount)  
+  % STUB
   % set initial values for all fields of the 'cellInfo' struct
   % NOTE: still unsure which values are given and which are calculated
   cellInfo.nodeCount = nodeCount;
@@ -26,7 +27,6 @@ function [cellInfo, systemInfo, programInfo] = initializeNetwork(nodeCount)
   % complete initialization of the 'cellInfo' struct
   % NOTE: still unsure of return type of 'createMesh()' function
   cellInfo = createMesh(cellInfo);
-  
 end
 
 %{
@@ -41,7 +41,7 @@ end
 Barber's function, needs some adaptation...
 %}
 function c = setup_int_nodes(c)
-
+  % STUB
   if c.mult_int_nodes
     boungeominfo = [2;c.n_enodes;c.xn;c.yn];
     nameofbound = ['cell']';
@@ -140,6 +140,85 @@ function c = setup_int_nodes(c)
             
   warning(['Mesh not yet perfected (e.g. equidistant nodes, ',...
     'equal connectivity, others?']);
+end
 
+%{
+Barber's function, still needs some adaptation...
+%}
+function c = node_info(c,s)
+  %  Because this info is stored for each node, some info is redundant. For
+  %  instance, each length will get stored twice because each edge has two
+  %  nodes.  This is for simplicity and should have negligible impact on
+  %  efficiency since the solving process should dominate cpu time.
+  c.ls = c.nc;
+  c.dxs = c.nc;
+  c.dys = c.nc;
+  c.nxs = c.nc;
+  c.nys = c.nc;
+  if isfield(c,'eareas'), firsttime = false; else, firsttime = true; end
+  %  These should eventually be estimated in a better way (in particular,
+  %  we want a circular shape to correspond to a steady configuration) but
+  %  for now we just make them 1s.
+  for nc = 1:numel(c.nc)
+    cnis = c.nc{nc};
+    c.dxs{nc} = c.xn(cnis)-c.xn(nc);
+    c.dys{nc} = c.yn(cnis)-c.yn(nc);
+    c.ls{nc} = sqrt(c.dxs{nc}.^2+c.dys{nc}.^2);
+    c.txs{nc} = c.dxs{nc}./c.ls{nc};
+    c.tys{nc} = c.dys{nc}./c.ls{nc};
+    %  These make unit vectors perpendicular to the tangent vectors so that
+    %  "normal" crossed with "tangent" yields 1.  The current
+    %  counterclockwise orientation of external nodes makes the normal from
+    %  external node i to i+1 point outwards (tangent vector points from
+    %  node i to i+1)
+    c.nxs{nc} = c.tys{nc};
+    c.nys{nc} = -c.txs{nc};
+    
+%     %  Debugging
+%     close(figure(5)); figure(5)
+%     quiver(c.xn(nc)*ones(size(cnis)),c.yn(nc)*ones(size(cnis)),...
+%       c.txs{nc}'.*c.ls{nc}',c.tys{nc}'.*c.ls{nc}',0);
+%     hold on
+%     midxs = (c.xn(nc)*ones(size(cnis))+c.xn(cnis)')./2;
+%     midys = (c.yn(nc)*ones(size(cnis))+c.yn(cnis)')./2;
+%     plot(c.xn(cnis),c.yn(cnis),'x');
+%     quiver(midxs,midys,c.nxs{nc}',c.nys{nc}');
+%     axis equal;
+      
+    % Between each pair of connections, there is an angle, which we
+    % calculate:
+    cnisp1 = circshift(1:numel(c.txs{nc}),-1);
+    c.crosses{nc} = c.txs{nc}.*c.tys{nc}(cnisp1)-...
+      c.tys{nc}.*c.txs{nc}(cnisp1);
+    c.dots{nc} = c.txs{nc}.*c.txs{nc}(cnisp1)+...
+      c.tys{nc}.*c.tys{nc}(cnisp1);
+    c.alphs{nc} = atan2(c.crosses{nc},c.dots{nc});
+    c.alphs{nc} = c.alphs{nc}+2*pi*(c.alphs{nc}<0);
+    sum(c.alphs{nc});
+    %  Between each pair of connections, there is also an element with
+    %  associated info (like area of that element)
+    if nc <= c.n_enodes
+      axs = c.xn(cnis(1:end-1),:); ays = c.yn(cnis(1:end-1),:);
+      bxs = c.xn(cnis(2:end),:); bys = c.yn(cnis(2:end),:);
+    else
+      axs = c.xn(cnis,:); ays = c.yn(cnis,:);
+      bxs = c.xn(circshift(cnis,-1),:); bys = c.yn(circshift(cnis,-1),:);
+    end
+    xxi = c.xn(nc)*ones(size(axs)); xyi = c.yn(nc)*ones(size(bxs));
+    a = [axs,ays]; b = [bxs,bys]; xi = [xxi,xyi];
+    if firsttime
+      c.eareas{nc} = triareainfo(xi,a,b);
+    else
+      %  c.anfs-"normalized forces".  This is the "geometric portion" of
+      %  the area-related forces and multiplying by ka, the area elastic
+      %  force modulus, will recover the actual forces
+      [c.eareas{nc},c.anfs{nc}] = ...
+        triareainfo(xi,a,b,c.earearefs{nc},1);
+    end
+  end
+  %  Store area and "volume estimate"
+  c.area = polyarea(c.xn(1:c.n_enodes),c.yn(1:c.n_enodes));
+  c.volest = est_3d_volume(c.xn(1:c.n_enodes),...
+    c.yn(1:c.n_enodes),s.vol_est_type);
 end
 
