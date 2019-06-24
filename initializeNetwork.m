@@ -42,6 +42,7 @@ end
 
 %{
 Barber's function, (somewhat) adapted to this program.
+Function to generate the mesh/set up the interior nodes.
 NOTE: Ideally, more variable names will be made more descriptive.
 %}
 function cellInfo = setupInteriorNodes(cellInfo)
@@ -80,15 +81,16 @@ function cellInfo = setupInteriorNodes(cellInfo)
   %  it is an external (false) or internal (true) node, the third column 
   %  is the index in terms of xm-ym or xn-yn depending on whichever is
   %  appropriate according to the second column.
-  for nc = 1:numel(cellInfo.xPosition)
-    tmp = elemat(:,find(any(nc == elemat)));
-    tmp2 = setdiff(tmp(:),nc);
-    if nc <= cellInfo.externalNodeCount
-      nnext = mod(nc,cellInfo.externalNodeCount)+1;
+  for nc = 1:numel(cellInfo.xPosition) % loop through total number of elements (iterating with 'nc')
+    tmp = elemat(:,find(any(nc == elemat))); % tmp contains the triangles that contain an 'nc'
+    tmp2 = setdiff(tmp(:),nc); % tmp2 contains a list of nodes that 'nc' is adjacent to
+    if nc <= cellInfo.externalNodeCount % for all 'nc' that correspond to an external node, set 'nnext' to be the next external node 
+      nnext = mod(nc,cellInfo.externalNodeCount)+1; % if we are at the last external node, set 'nnext' to the first external node
       start_ind = nnext;
     else
-      start_ind = tmp2(1);
+      start_ind = tmp2(1); % for all 'nc' that correspond to an internal node, set 'start_ind' to the first in the list of adjacent nodes
     end
+    
     inds = start_ind;
     for connc = 1:numel(tmp2)-1
       tri_ind = find(any(inds(connc) == tmp),1);
@@ -96,10 +98,13 @@ function cellInfo = setupInteriorNodes(cellInfo)
       [m,n] = size(tmp);
       tmp = tmp(:,setdiff(1:n,tri_ind));
     end
-    if ispolycw(cellInfo.xPosition(inds),cellInfo.yPosition(inds))
+    
+    % makes sure numbering/orientation is correct (?)
+    if ispolycw(cellInfo.xPosition(inds),cellInfo.yPosition(inds)) 
       inds = circshift(fliplr(inds),1);
     end
-    cellInfo.nc{nc} = inds;
+    
+    cellInfo.nodesAdjacent{nc} = inds;
   end
   
   %  For plotting later, a list of all the indices corresponding to the
@@ -109,8 +114,8 @@ function cellInfo = setupInteriorNodes(cellInfo)
   tmp = sort(cellInfo.enlist,2);
   cellInfo.nlist = [];
   for nc = 1:cellInfo.totalNodeCount
-    for cnc = 1:numel(cellInfo.nc{nc})
-      cellInfo.nlist = [cellInfo.nlist;nc,cellInfo.nc{nc}(cnc)];
+    for cnc = 1:numel(cellInfo.nodesAdjacent{nc})
+      cellInfo.nlist = [cellInfo.nlist;nc,cellInfo.nodesAdjacent{nc}(cnc)];
     end
   end
   %  There are twice as many indices as we actually need for our plots,
@@ -123,10 +128,10 @@ function cellInfo = setupInteriorNodes(cellInfo)
   if do_connectivity_plot
     myc = 'rgbmyck'; myc = [myc,myc]; myc = [myc,myc]; myc = [myc,myc];
     close(figure(1)); figure(1); plot(cellInfo.xPosition,cellInfo.yPosition,'k'); hold on;
-    for nc = 1:numel(cellInfo.nc)
-      for connc = 1:numel(cellInfo.nc{nc})
-        plot([cellInfo.xPosition(nc),cellInfo.xPosition(cellInfo.nc{nc}(connc))],...
-          [cellInfo.yPosition(nc),cellInfo.yPosition(cellInfo.nc{nc}(connc))],myc(nc),'LineWidth',2);
+    for nc = 1:numel(cellInfo.nodesAdjacent)
+      for connc = 1:numel(cellInfo.nodesAdjacent{nc})
+        plot([cellInfo.xPosition(nc),cellInfo.xPosition(cellInfo.nodesAdjacent{nc}(connc))],...
+          [cellInfo.yPosition(nc),cellInfo.yPosition(cellInfo.nodesAdjacent{nc}(connc))],myc(nc),'LineWidth',2);
         pause
       end
     end
@@ -138,6 +143,7 @@ end
 
 %{
 Barber's function, still needs some adaptation...
+Function to calculate more info about the cell
 NOTE: find which fields are unnecessary
 NOTE: triareainfo function?
 NOTE: more descriptive variable names
@@ -148,22 +154,22 @@ function cellInfo = nodeInfo(cellInfo,s)
   %  instance, each length will get stored twice because each edge has two
   %  nodes.  This is for simplicity and should have negligible impact on
   %  efficiency since the solving process should dominate cpu time.
-  cellInfo.ls = cellInfo.nc;
-  cellInfo.dxs = cellInfo.nc;
-  cellInfo.dys = cellInfo.nc;
-  cellInfo.nxs = cellInfo.nc;
-  cellInfo.nys = cellInfo.nc;
+  cellInfo.lengths = cellInfo.nodesAdjacent;
+  cellInfo.dxs = cellInfo.nodesAdjacent;
+  cellInfo.dys = cellInfo.nodesAdjacent;
+  cellInfo.nxs = cellInfo.nodesAdjacent;
+  cellInfo.nys = cellInfo.nodesAdjacent;
   if isfield(cellInfo,'eareas'), firsttime = false; else, firsttime = true; end
   %  These should eventually be estimated in a better way (in particular,
   %  we want a circular shape to correspond to a steady configuration) but
   %  for now we just make them 1s.
-  for nc = 1:numel(cellInfo.nc)
-    cnis = cellInfo.nc{nc};
+  for nc = 1:numel(cellInfo.nodesAdjacent)
+    cnis = cellInfo.nodesAdjacent{nc};
     cellInfo.dxs{nc} = cellInfo.xPosition(cnis)-cellInfo.xPosition(nc);
     cellInfo.dys{nc} = cellInfo.yPosition(cnis)-cellInfo.yPosition(nc);
-    cellInfo.ls{nc} = sqrt(cellInfo.dxs{nc}.^2+cellInfo.dys{nc}.^2);
-    cellInfo.txs{nc} = cellInfo.dxs{nc}./cellInfo.ls{nc};
-    cellInfo.tys{nc} = cellInfo.dys{nc}./cellInfo.ls{nc};
+    cellInfo.lengths{nc} = sqrt(cellInfo.dxs{nc}.^2+cellInfo.dys{nc}.^2);
+    cellInfo.txs{nc} = cellInfo.dxs{nc}./cellInfo.lengths{nc};
+    cellInfo.tys{nc} = cellInfo.dys{nc}./cellInfo.lengths{nc};
     %  These make unit vectors perpendicular to the tangent vectors so that
     %  "normal" crossed with "tangent" yields 1.  The current
     %  counterclockwise orientation of external nodes makes the normal from
@@ -175,7 +181,7 @@ function cellInfo = nodeInfo(cellInfo,s)
 %     %  Debugging
 %     close(figure(5)); figure(5)
 %     quiver(c.xn(nc)*ones(size(cnis)),c.yn(nc)*ones(size(cnis)),...
-%       c.txs{nc}'.*c.ls{nc}',c.tys{nc}'.*c.ls{nc}',0);
+%       c.txs{nc}'.*c.lengths{nc}',c.tys{nc}'.*c.lengths{nc}',0);
 %     hold on
 %     midxs = (c.xn(nc)*ones(size(cnis))+c.xn(cnis)')./2;
 %     midys = (c.yn(nc)*ones(size(cnis))+c.yn(cnis)')./2;

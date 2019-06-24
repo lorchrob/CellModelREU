@@ -1,7 +1,7 @@
 %{
 This .m is copied from Barber
 %}
-function [area,F] = triareainfo(xi,a,b,prevareas,ka)
+function [area,F] = triangleAreaInfo(xi,a,b,prevareas,ka)
   %  Returns various information for an elastic triangle
   %  The "areal elastic energy" of the triangle per unit area is given as a
   %  function of "areal strain":  Ea/Ae0 = ka/2*((Ae-Ae0)/Ae0)^2.
