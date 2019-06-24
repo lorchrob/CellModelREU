@@ -21,10 +21,8 @@ function cellInfo = initializeNetwork(externalNodeCount)
   % STUB
   % set initial values for all fields of the 'cellInfo' struct
   % NOTE: still unsure which values are given and which are calculated
+  s = "not yet implemented"
   cellInfo.externalNodeCount = externalNodeCount;
-  cellInfo.refLength = 3; % placeholder
-  cellInfo.tensions = []; % ? maybe ?
-  cellInfo.lengths = []; 
   cellInfo.radius = 12.4/2; 
   cellInfo.refArea = pi*cellInfo.radius^2;
   
@@ -39,15 +37,7 @@ function cellInfo = initializeNetwork(externalNodeCount)
   cellInfo.yPosition = bsxfun(@plus, 0, cellInfo.internalRefLength*sin(nodeAngles));
   
   cellInfo = setupInteriorNodes(cellInfo);
-  plot(cellInfo.xPosition, cellInfo.yPosition);
-end
-
-%{
-Function to generate the triangular mesh for the cell interior
-NOTE: still unsure of return type for this function
-%}
-function cellInfo = createMesh(cellInfo)
-  % STUB
+  cellInfo = nodeInfo(cellInfo, s);
 end
 
 %{
@@ -55,7 +45,6 @@ Barber's function, (somewhat) adapted to this program.
 NOTE: Ideally, more variable names will be made more descriptive.
 %}
 function cellInfo = setupInteriorNodes(cellInfo)
-  % STUB
   boungeominfo = [2; cellInfo.externalNodeCount; cellInfo.xPosition; cellInfo.yPosition];
   nameofbound = ['cell']';
   %  One can use set formulas to intersect and union bounded regions,
@@ -149,8 +138,10 @@ end
 
 %{
 Barber's function, still needs some adaptation...
+NOTE: find which fields are unnecessary
+NOTE: triareainfo function?
 %}
-function cellInfo = node_info(cellInfo,s)
+function cellInfo = nodeInfo(cellInfo,s)
   %  STUB
   %  Because this info is stored for each node, some info is redundant. For
   %  instance, each length will get stored twice because each edge has two
@@ -224,7 +215,8 @@ function cellInfo = node_info(cellInfo,s)
   end
   %  Store area and "volume estimate"
   cellInfo.area = polyarea(cellInfo.xPosition(1:cellInfo.externalNodeCount),cellInfo.yPosition(1:cellInfo.externalNodeCount));
-  cellInfo.volest = est_3d_volume(cellInfo.xPosition(1:cellInfo.externalNodeCount),...
-    cellInfo.yPosition(1:cellInfo.externalNodeCount),s.vol_est_type);
+  cellInfo.volest = "unimplemented for now";
+  %est_3d_volume(cellInfo.xPosition(1:cellInfo.externalNodeCount),...
+    %cellInfo.yPosition(1:cellInfo.externalNodeCount),s.vol_est_type);
 end
 
