@@ -110,18 +110,18 @@ function cellInfo = setupInteriorNodes(cellInfo)
   %  For plotting later, a list of all the indices corresponding to the
   %  line segments
   inds = [1:cellInfo.externalNodeCount]';
-  cellInfo.enlist = [inds,mod(inds,cellInfo.externalNodeCount)+1];
-  tmp = sort(cellInfo.enlist,2);
-  cellInfo.nlist = [];
+  cellInfo.externalLineSegments = [inds,mod(inds,cellInfo.externalNodeCount)+1];
+  tmp = sort(cellInfo.externalLineSegments,2);
+  cellInfo.lineSegments = [];
   for nc = 1:cellInfo.totalNodeCount
     for cnc = 1:numel(cellInfo.nodesAdjacent{nc})
-      cellInfo.nlist = [cellInfo.nlist;nc,cellInfo.nodesAdjacent{nc}(cnc)];
+      cellInfo.lineSegments = [cellInfo.lineSegments;nc,cellInfo.nodesAdjacent{nc}(cnc)];
     end
   end
   %  There are twice as many indices as we actually need for our plots,
   %  sort and eliminate duplicates:
-  cellInfo.nlist = unique(sort(cellInfo.nlist,2),'rows');
-  cellInfo.inlist = setdiff(cellInfo.nlist,tmp,'rows');
+  cellInfo.lineSegments = unique(sort(cellInfo.lineSegments,2),'rows');
+  cellInfo.internalLineSegments = setdiff(cellInfo.lineSegments,tmp,'rows');
 
   %  Check the connectivities
   do_connectivity_plot = false;
@@ -191,7 +191,7 @@ function cellInfo = nodeInfo(cellInfo,s)
       
     % Between each pair of connections, there is an angle, which we
     % calculate:
-    cnisp1 = circshift(1:numel(cellInfo.txs{nc}),-1);
+    cnisp1 = circshift(1:numel(cellInfo.txs{nc}),-1); % apply a shift of elements to easily compare this node with the next node
     cellInfo.crosses{nc} = cellInfo.txs{nc}.*cellInfo.tys{nc}(cnisp1)-...
       cellInfo.tys{nc}.*cellInfo.txs{nc}(cnisp1);
     cellInfo.dots{nc} = cellInfo.txs{nc}.*cellInfo.txs{nc}(cnisp1)+...
