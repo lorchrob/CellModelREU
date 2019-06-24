@@ -140,6 +140,7 @@ end
 Barber's function, still needs some adaptation...
 NOTE: find which fields are unnecessary
 NOTE: triareainfo function?
+NOTE: more descriptive variable names
 %}
 function cellInfo = nodeInfo(cellInfo,s)
   %  STUB
@@ -204,7 +205,7 @@ function cellInfo = nodeInfo(cellInfo,s)
     xxi = cellInfo.xPosition(nc)*ones(size(axs)); xyi = cellInfo.yPosition(nc)*ones(size(bxs));
     a = [axs,ays]; b = [bxs,bys]; xi = [xxi,xyi];
     if firsttime
-      cellInfo.eareas{nc} = triareainfo(xi,a,b);
+      cellInfo.eareas{nc} = triangleAreaInfo(xi,a,b);
     else
       %  c.anfs-"normalized forces".  This is the "geometric portion" of
       %  the area-related forces and multiplying by ka, the area elastic
