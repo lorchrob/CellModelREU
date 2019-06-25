@@ -21,7 +21,7 @@ function cellInfo = initializeNetwork(externalNodeCount)
   % STUB
   % set initial values for all fields of the 'cellInfo' struct
   % NOTE: still unsure which values are given and which are calculated
-  s = "not yet implemented"
+  s = "not yet implemented";
   cellInfo.externalNodeCount = externalNodeCount;
   cellInfo.radius = 12.4/2; 
   cellInfo.refArea = pi*cellInfo.radius^2;
@@ -81,20 +81,20 @@ function cellInfo = setupInteriorNodes(cellInfo)
   %  it is an external (false) or internal (true) node, the third column 
   %  is the index in terms of xm-ym or xn-yn depending on whichever is
   %  appropriate according to the second column.
-  for nc = 1:numel(cellInfo.xPosition) % loop through total number of elements (iterating with 'nc')
-    tmp = elemat(:,find(any(nc == elemat))); % tmp contains the triangles that contain an 'nc'
-    tmp2 = setdiff(tmp(:),nc); % tmp2 contains a list of nodes that 'nc' is adjacent to
-    if nc <= cellInfo.externalNodeCount % for all 'nc' that correspond to an external node, set 'nnext' to be the next external node 
-      nnext = mod(nc,cellInfo.externalNodeCount)+1; % if we are at the last external node, set 'nnext' to the first external node
+  for i = 1:numel(cellInfo.xPosition) % loop through total number of elements (iterating with 'i')
+    tmp = elemat(:,find(any(i == elemat))); % tmp contains the triangles that contain an 'i'
+    tmp2 = setdiff(tmp(:),i); % tmp2 contains a list of nodes that 'i' is adjacent to
+    if i <= cellInfo.externalNodeCount % for all 'i' that correspond to an external node, set 'nnext' to be the next external node 
+      nnext = mod(i,cellInfo.externalNodeCount)+1; % if we are at the last external node, set 'nnext' to the first external node
       start_ind = nnext;
     else
-      start_ind = tmp2(1); % for all 'nc' that correspond to an internal node, set 'start_ind' to the first in the list of adjacent nodes
+      start_ind = tmp2(1); % for all 'i' that correspond to an internal node, set 'start_ind' to the first in the list of adjacent nodes
     end
     
     inds = start_ind;
     for connc = 1:numel(tmp2)-1
       tri_ind = find(any(inds(connc) == tmp),1);
-      inds(connc+1) = setdiff(tmp(:,tri_ind),[nc,inds(connc)]);
+      inds(connc+1) = setdiff(tmp(:,tri_ind),[i,inds(connc)]);
       [m,n] = size(tmp);
       tmp = tmp(:,setdiff(1:n,tri_ind));
     end
@@ -104,7 +104,7 @@ function cellInfo = setupInteriorNodes(cellInfo)
       inds = circshift(fliplr(inds),1);
     end
     
-    cellInfo.nodesAdjacent{nc} = inds;
+    cellInfo.nodesAdjacent{i} = inds;
   end
   
   %  For plotting later, a list of all the indices corresponding to the
@@ -113,9 +113,9 @@ function cellInfo = setupInteriorNodes(cellInfo)
   cellInfo.externalLineSegments = [inds,mod(inds,cellInfo.externalNodeCount)+1];
   tmp = sort(cellInfo.externalLineSegments,2);
   cellInfo.lineSegments = [];
-  for nc = 1:cellInfo.totalNodeCount
-    for cnc = 1:numel(cellInfo.nodesAdjacent{nc})
-      cellInfo.lineSegments = [cellInfo.lineSegments;nc,cellInfo.nodesAdjacent{nc}(cnc)];
+  for i = 1:cellInfo.totalNodeCount
+    for cnc = 1:numel(cellInfo.nodesAdjacent{i})
+      cellInfo.lineSegments = [cellInfo.lineSegments;i,cellInfo.nodesAdjacent{i}(cnc)];
     end
   end
   %  There are twice as many indices as we actually need for our plots,
@@ -128,10 +128,10 @@ function cellInfo = setupInteriorNodes(cellInfo)
   if do_connectivity_plot
     myc = 'rgbmyck'; myc = [myc,myc]; myc = [myc,myc]; myc = [myc,myc];
     close(figure(1)); figure(1); plot(cellInfo.xPosition,cellInfo.yPosition,'k'); hold on;
-    for nc = 1:numel(cellInfo.nodesAdjacent)
-      for connc = 1:numel(cellInfo.nodesAdjacent{nc})
-        plot([cellInfo.xPosition(nc),cellInfo.xPosition(cellInfo.nodesAdjacent{nc}(connc))],...
-          [cellInfo.yPosition(nc),cellInfo.yPosition(cellInfo.nodesAdjacent{nc}(connc))],myc(nc),'LineWidth',2);
+    for i = 1:numel(cellInfo.nodesAdjacent)
+      for connc = 1:numel(cellInfo.nodesAdjacent{i})
+        plot([cellInfo.xPosition(i),cellInfo.xPosition(cellInfo.nodesAdjacent{i}(connc))],...
+          [cellInfo.yPosition(i),cellInfo.yPosition(cellInfo.nodesAdjacent{i}(connc))],myc(i),'LineWidth',2);
         pause
       end
     end
@@ -159,70 +159,70 @@ function cellInfo = nodeInfo(cellInfo,s)
   cellInfo.dys = cellInfo.nodesAdjacent;
   cellInfo.nxs = cellInfo.nodesAdjacent;
   cellInfo.nys = cellInfo.nodesAdjacent;
-  if isfield(cellInfo,'eareas'), firsttime = false; else, firsttime = true; end
+  if isfield(cellInfo,'elasticAreas'), firsttime = false; else, firsttime = true; end
   %  These should eventually be estimated in a better way (in particular,
   %  we want a circular shape to correspond to a steady configuration) but
   %  for now we just make them 1s.
-  for nc = 1:numel(cellInfo.nodesAdjacent)
-    cnis = cellInfo.nodesAdjacent{nc};
-    cellInfo.dxs{nc} = cellInfo.xPosition(cnis)-cellInfo.xPosition(nc);
-    cellInfo.dys{nc} = cellInfo.yPosition(cnis)-cellInfo.yPosition(nc);
-    cellInfo.lengths{nc} = sqrt(cellInfo.dxs{nc}.^2+cellInfo.dys{nc}.^2);
-    cellInfo.txs{nc} = cellInfo.dxs{nc}./cellInfo.lengths{nc};
-    cellInfo.tys{nc} = cellInfo.dys{nc}./cellInfo.lengths{nc};
+  for i = 1:numel(cellInfo.nodesAdjacent)
+    cnis = cellInfo.nodesAdjacent{i};
+    cellInfo.dxs{i} = cellInfo.xPosition(cnis)-cellInfo.xPosition(i);
+    cellInfo.dys{i} = cellInfo.yPosition(cnis)-cellInfo.yPosition(i);
+    cellInfo.lengths{i} = sqrt(cellInfo.dxs{i}.^2+cellInfo.dys{i}.^2);
+    cellInfo.txs{i} = cellInfo.dxs{i}./cellInfo.lengths{i};
+    cellInfo.tys{i} = cellInfo.dys{i}./cellInfo.lengths{i};
     %  These make unit vectors perpendicular to the tangent vectors so that
     %  "normal" crossed with "tangent" yields 1.  The current
     %  counterclockwise orientation of external nodes makes the normal from
     %  external node i to i+1 point outwards (tangent vector points from
     %  node i to i+1)
-    cellInfo.nxs{nc} = cellInfo.tys{nc};
-    cellInfo.nys{nc} = -cellInfo.txs{nc};
+    cellInfo.nxs{i} = cellInfo.tys{i};
+    cellInfo.nys{i} = -cellInfo.txs{i};
     
 %     %  Debugging
 %     close(figure(5)); figure(5)
-%     quiver(c.xn(nc)*ones(size(cnis)),c.yn(nc)*ones(size(cnis)),...
-%       c.txs{nc}'.*c.lengths{nc}',c.tys{nc}'.*c.lengths{nc}',0);
+%     quiver(c.xn(i)*ones(size(cnis)),c.yn(i)*ones(size(cnis)),...
+%       c.txs{i}'.*c.lengths{i}',c.tys{i}'.*c.lengths{i}',0);
 %     hold on
-%     midxs = (c.xn(nc)*ones(size(cnis))+c.xn(cnis)')./2;
-%     midys = (c.yn(nc)*ones(size(cnis))+c.yn(cnis)')./2;
+%     midxs = (c.xn(i)*ones(size(cnis))+c.xn(cnis)')./2;
+%     midys = (c.yn(i)*ones(size(cnis))+c.yn(cnis)')./2;
 %     plot(c.xn(cnis),c.yn(cnis),'x');
-%     quiver(midxs,midys,c.nxs{nc}',c.nys{nc}');
+%     quiver(midxs,midys,c.nxs{i}',c.nys{i}');
 %     axis equal;
       
     % Between each pair of connections, there is an angle, which we
     % calculate:
-    cnisp1 = circshift(1:numel(cellInfo.txs{nc}),-1); % apply a shift of elements to easily compare this node with the next node
-    cellInfo.crosses{nc} = cellInfo.txs{nc}.*cellInfo.tys{nc}(cnisp1)-...
-      cellInfo.tys{nc}.*cellInfo.txs{nc}(cnisp1);
-    cellInfo.dots{nc} = cellInfo.txs{nc}.*cellInfo.txs{nc}(cnisp1)+...
-      cellInfo.tys{nc}.*cellInfo.tys{nc}(cnisp1);
-    cellInfo.alphs{nc} = atan2(cellInfo.crosses{nc},cellInfo.dots{nc});
-    cellInfo.alphs{nc} = cellInfo.alphs{nc}+2*pi*(cellInfo.alphs{nc}<0);
-    sum(cellInfo.alphs{nc});
+    cnisp1 = circshift(1:numel(cellInfo.txs{i}),-1); % apply a shift of elements to easily compare this node with the next node
+    cellInfo.crosses{i} = cellInfo.txs{i}.*cellInfo.tys{i}(cnisp1)-...
+      cellInfo.tys{i}.*cellInfo.txs{i}(cnisp1);
+    cellInfo.dots{i} = cellInfo.txs{i}.*cellInfo.txs{i}(cnisp1)+...
+      cellInfo.tys{i}.*cellInfo.tys{i}(cnisp1);
+    cellInfo.alphs{i} = atan2(cellInfo.crosses{i},cellInfo.dots{i});
+    cellInfo.alphs{i} = cellInfo.alphs{i}+2*pi*(cellInfo.alphs{i}<0);
+    sum(cellInfo.alphs{i});
     %  Between each pair of connections, there is also an element with
     %  associated info (like area of that element)
-    if nc <= cellInfo.externalNodeCount
+    if i <= cellInfo.externalNodeCount
       axs = cellInfo.xPosition(cnis(1:end-1),:); ays = cellInfo.yPosition(cnis(1:end-1),:);
       bxs = cellInfo.xPosition(cnis(2:end),:); bys = cellInfo.yPosition(cnis(2:end),:);
     else
       axs = cellInfo.xPosition(cnis,:); ays = cellInfo.yPosition(cnis,:);
       bxs = cellInfo.xPosition(circshift(cnis,-1),:); bys = cellInfo.yPosition(circshift(cnis,-1),:);
     end
-    xxi = cellInfo.xPosition(nc)*ones(size(axs)); xyi = cellInfo.yPosition(nc)*ones(size(bxs));
+    xxi = cellInfo.xPosition(i)*ones(size(axs)); xyi = cellInfo.yPosition(i)*ones(size(bxs));
     a = [axs,ays]; b = [bxs,bys]; xi = [xxi,xyi];
     if firsttime
-      cellInfo.eareas{nc} = triangleAreaInfo(xi,a,b);
+      cellInfo.elasticAreas{i} = triangleAreaInfo(xi,a,b);
     else
       %  c.anfs-"normalized forces".  This is the "geometric portion" of
       %  the area-related forces and multiplying by ka, the area elastic
       %  force modulus, will recover the actual forces
-      [cellInfo.eareas{nc},cellInfo.anfs{nc}] = ...
-        triareainfo(xi,a,b,cellInfo.earearefs{nc},1);
+      [cellInfo.elasticAreas{i},cellInfo.anfs{i}] = ...
+        triareainfo(xi,a,b,cellInfo.earearefs{i},1);
     end
   end
   %  Store area and "volume estimate"
   cellInfo.area = polyarea(cellInfo.xPosition(1:cellInfo.externalNodeCount),cellInfo.yPosition(1:cellInfo.externalNodeCount));
-  cellInfo.volest = "unimplemented for now";
+  cellInfo.volumeEstimate = "unimplemented for now";
   %est_3d_volume(cellInfo.xPosition(1:cellInfo.externalNodeCount),...
     %cellInfo.yPosition(1:cellInfo.externalNodeCount),s.vol_est_type);
 end
