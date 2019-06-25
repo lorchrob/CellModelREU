@@ -166,7 +166,8 @@ function cellInfo = nodeInfo(cellInfo,s)
   cellInfo.dys = cellInfo.nodesAdjacent;
   cellInfo.nxs = cellInfo.nodesAdjacent;
   cellInfo.nys = cellInfo.nodesAdjacent;
-  if isfield(cellInfo,'elasticAreas'), firsttime = false; else, firsttime = true; end
+ % NOT YET PART OF PROJECT
+ % if isfield(cellInfo,'elasticAreas'), firsttime = false; else, firsttime = true; end
   %  These should eventually be estimated in a better way (in particular,
   %  we want a circular shape to correspond to a steady configuration) but
   %  for now we just make them 1s.
@@ -217,20 +218,19 @@ function cellInfo = nodeInfo(cellInfo,s)
     end
     xxi = cellInfo.xPosition(i)*ones(size(axs)); xyi = cellInfo.yPosition(i)*ones(size(bxs));
     a = [axs,ays]; b = [bxs,bys]; xi = [xxi,xyi];
-    if firsttime
-      cellInfo.elasticAreas{i} = triangleAreaInfo(xi,a,b);
-    else
+    
+   % NOT YET PART OF PROJECT
+   % if firsttime
+      % cellInfo.elasticAreas{i} = triangleAreaInfo(xi,a,b);
+   % else
       %  c.anfs-"normalized forces".  This is the "geometric portion" of
       %  the area-related forces and multiplying by ka, the area elastic
       %  force modulus, will recover the actual forces
-      [cellInfo.elasticAreas{i},cellInfo.anfs{i}] = ...
-        triareainfo(xi,a,b,cellInfo.earearefs{i},1);
-    end
+      % [cellInfo.elasticAreas{i},cellInfo.anfs{i}] = ...
+      %  triareainfo(xi,a,b,cellInfo.earearefs{i},1);
+   % end
   end
   %  Store area and "volume estimate"
   cellInfo.area = polyarea(cellInfo.xPosition(1:cellInfo.externalNodeCount),cellInfo.yPosition(1:cellInfo.externalNodeCount));
-  cellInfo.volumeEstimate = "unimplemented for now";
-  %est_3d_volume(cellInfo.xPosition(1:cellInfo.externalNodeCount),...
-    %cellInfo.yPosition(1:cellInfo.externalNodeCount),s.vol_est_type);
 end
 
