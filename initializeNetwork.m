@@ -26,11 +26,11 @@ function cellInfo = initializeNetwork(externalNodeCount)
   cellInfo.radius = 12.4/2; 
   cellInfo.refArea = pi*cellInfo.radius^2;
   % underscores represent subscripts
-  cellInfo.k_te = 12;
-  cellInfo.k_ti = 0;
+  cellInfo.k_te = 1200;
+  cellInfo.k_ti = 1200;
   cellInfo.mu_e = 200;
-  cellInfo.mu_i = 100*20/cellInfo.externalNodeCount;
-  cellInfo.k_be = .9;
+  cellInfo.mu_i = 100;
+  cellInfo.k_be = 90;
   cellInfo.k_bi = 0;
   
   % distance from center to the external nodes
@@ -62,12 +62,12 @@ function cellInfo = setupInteriorNodes(cellInfo)
   pdegplot(dl,'EdgeLabels','on','FaceLabels','on');
   model = createpde;
   geometryFromEdges(model,dl);
-  generateMesh(model,'Hmax',cellInfo.externalRefLength','Hmin',cellInfo.externalRefLength,'Hgrad',1,...
-    'GeometricOrder','linear');
+  generateMesh(model, 'Hmax', cellInfo.externalRefLength', 'Hmin', cellInfo.externalRefLength, 'Hgrad', 1,...
+    'GeometricOrder', 'linear');
   pdemesh(model);
     
   tol = 1e-12;
-  [a,b] = ismembertol([cellInfo.xPosition,cellInfo.yPosition],model.Mesh.Nodes',tol,'ByRows',true);
+  [a,b] = ismembertol([cellInfo.xPosition, cellInfo.yPosition], model.Mesh.Nodes', tol, 'ByRows', true);
   if ~isequal(b,[1:cellInfo.externalNodeCount]')
     keyboard;
   end
@@ -92,7 +92,7 @@ function cellInfo = setupInteriorNodes(cellInfo)
     tmp = elemat(:,find(any(i == elemat))); % tmp contains the triangles that contain an 'i'
     tmp2 = setdiff(tmp(:),i); % tmp2 contains a list of nodes that 'i' is adjacent to
     if i <= cellInfo.externalNodeCount % for all 'i' that correspond to an external node, set 'nnext' to be the next external node 
-      nnext = mod(i,cellInfo.externalNodeCount)+1; % if we are at the last external node, set 'nnext' to the first external node
+      nnext = mod(i, cellInfo.externalNodeCount)+1; % if we are at the last external node, set 'nnext' to the first external node
       start_ind = nnext;
     else
       start_ind = tmp2(1); % for all 'i' that correspond to an internal node, set 'start_ind' to the first in the list of adjacent nodes

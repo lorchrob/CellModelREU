@@ -1,5 +1,5 @@
 %{
-This .m is copied from Barber
+This .m is copied from Barber, CURRENTLY NOT USED IN PROJECT
 %}
 function [area,F] = triangleAreaInfo(xi,a,b,prevareas,ka)
   %  Returns various information for an elastic triangle
