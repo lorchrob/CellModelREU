@@ -18,7 +18,6 @@ NOTE: if I understand correctly, the # of external nodes is specified,
 outline is made, and then middle is filled in?
 %}
 function cellInfo = initializeNetwork(externalNodeCount)  
-  % STUB
   % set initial values for all fields of the 'cellInfo' struct
   % NOTE: still unsure which values are given and which are calculated
   s = "not yet implemented";
@@ -44,7 +43,11 @@ function cellInfo = initializeNetwork(externalNodeCount)
   cellInfo.yPosition = bsxfun(@plus, 0, cellInfo.internalRefLength*sin(nodeAngles));
   
   cellInfo = setupInteriorNodes(cellInfo);
-  cellInfo = nodeInfo(cellInfo, s);
+  cellInfo = calculateNodeInfo(cellInfo);
+  
+  nodeNum = 20;
+  nodePos = [cellInfo.xPosition(nodeNum), cellInfo.yPosition(nodeNum)];
+  calculateForce(nodePos, nodeNum, cellInfo)
 end
 
 %{
@@ -61,7 +64,7 @@ function cellInfo = setupInteriorNodes(cellInfo)
   [dl,bt] = decsg(boungeominfo,setformulas,nameofbound);
   pdegplot(dl,'EdgeLabels','on','FaceLabels','on');
   model = createpde;
-  geometryFromEdges(model,dl);
+  geometryFromEdges(model, dl);
   generateMesh(model, 'Hmax', cellInfo.externalRefLength', 'Hmin', cellInfo.externalRefLength, 'Hgrad', 1,...
     'GeometricOrder', 'linear');
   pdemesh(model);
@@ -155,8 +158,7 @@ NOTE: find which fields are unnecessary
 NOTE: triareainfo function?
 NOTE: more descriptive variable names
 %}
-function cellInfo = nodeInfo(cellInfo,s)
-  %  STUB
+function cellInfo = calculateNodeInfo(cellInfo)
   %  Because this info is stored for each node, some info is redundant. For
   %  instance, each length will get stored twice because each edge has two
   %  nodes.  This is for simplicity and should have negligible impact on
@@ -185,6 +187,10 @@ function cellInfo = nodeInfo(cellInfo,s)
     %  node i to i+1)
     cellInfo.nxs{i} = cellInfo.tys{i};
     cellInfo.nys{i} = -cellInfo.txs{i};
+    % internalRefLength and externalRefLength were used for initial
+    % generation, but now for this initialized version, the lengths are the
+    % reference lengths (so that there is no tension in the cell)
+    cellInfo.refLengths = cellInfo.lengths;
     
 %     %  Debugging
 %     close(figure(5)); figure(5)
