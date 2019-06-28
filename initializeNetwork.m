@@ -18,9 +18,7 @@ NOTE: if I understand correctly, the # of external nodes is specified,
 outline is made, and then middle is filled in?
 %}
 function cellInfo = initializeNetwork(externalNodeCount)  
-  % set initial values for all fields of the 'cellInfo' struct
-  % NOTE: still unsure which values are given and which are calculated
-  s = "not yet implemented";
+  % set initial values for some fields of the 'cellInfo' struct
   cellInfo.externalNodeCount = externalNodeCount;
   cellInfo.radius = 12.4/2; 
   cellInfo.refArea = pi*cellInfo.radius^2;
@@ -45,7 +43,7 @@ function cellInfo = initializeNetwork(externalNodeCount)
   cellInfo = setupInteriorNodes(cellInfo);
   cellInfo = calculateNodeInfo(cellInfo);
   
-  nodeNum = 20;
+  nodeNum = 1;
   nodePos = [cellInfo.xPosition(nodeNum), cellInfo.yPosition(nodeNum)];
   calculateForce(nodePos, nodeNum, cellInfo)
 end

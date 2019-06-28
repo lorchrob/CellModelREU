@@ -3,16 +3,24 @@ Main function for finding the steady state for the system of viscoelastic
 elements. Still unsure of parameters/return variables.
 %}
 function cellInfoNew = findSteadyState(cellInfo)  
-  % use fsolve/calculateForce to find posititions
-  % not sure of syntax yet, just getting the idea
-  newPositions = fsolve(force());
+  % set initial guess
+  x_0 = [0 0]
+  % set up space for new cell positions
+  newPositions = zeros(2, cellInfo.totalNodeCount);
+  j = 1;
   
+  for i = 1 : cellInfo.totalNodeCount
+    newPositions(j:j+1) = fsolve(@(x) calculateForce(x, i, cellInfo), x_0);
+    j = j + 2;
+  end
+  
+  plot(newPositions(1,:), newPositions(2,:));
   % use positions to create cellInfoNew, which is the cell at steady state
-  cellInfoNew = cellInfo;
-  cellInfoNew.xPosition = newPositions;
-  cellInfoNew.yPosition = newPositions;
-  cellInfoNew = nodeInfo(cellInfoNew);
-end
+  %cellInfoNew = cellInfo;
+  %cellInfoNew.xPosition = newPositions;
+  %cellInfoNew.yPosition = newPositions;
+  %cellInfoNew = nodeInfo(cellInfoNew);
+end 
 
 %{
 Function to calculate the total force acting on a node. At steady
