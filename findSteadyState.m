@@ -14,12 +14,16 @@ function cellInfoNew = findSteadyState(cellInfo)
     j = j + 2;
   end
   
-  plot(newPositions(1,:), newPositions(2,:));
+  % we need to find out how to plot the new state of the cell correctly
+  %plot(newPositions(1,:), newPositions(2,:));
+  
   % use positions to create cellInfoNew, which is the cell at steady state
-  %cellInfoNew = cellInfo;
-  %cellInfoNew.xPosition = newPositions;
-  %cellInfoNew.yPosition = newPositions;
-  %cellInfoNew = nodeInfo(cellInfoNew);
+  cellInfoNew = cellInfo;
+  cellInfoNew.xPosition = transpose(newPositions(1,:));
+  cellInfoNew.yPosition = transpose(newPositions(2,:));
+  
+  % find out how to access 'nodeInfo' function
+  cellInfoNew = calculateNodeInfo(cellInfoNew);
 end 
 
 %{
