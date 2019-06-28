@@ -38,9 +38,7 @@ function cellInfo = calculateNodeInfo(cellInfo)
     % internalRefLength and externalRefLength were used for initial
     % generation, but now for this initialized version, the lengths are the
     % reference lengths (so that there is no tension in the cell)
-    if ~isfield(cellInfo, "refLengths")
-      cellInfo.refLengths = cellInfo.lengths;
-    end
+    
     
 %     %  Debugging
 %     close(figure(5)); figure(5)
@@ -88,4 +86,8 @@ function cellInfo = calculateNodeInfo(cellInfo)
   end
   %  Store area and "volume estimate"
   cellInfo.area = polyarea(cellInfo.xPosition(1:cellInfo.externalNodeCount),cellInfo.yPosition(1:cellInfo.externalNodeCount));
+  
+  if ~isfield(cellInfo, "refLengths")
+    cellInfo.refLengths = cellInfo.lengths;
+  end
 end

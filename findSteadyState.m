@@ -5,6 +5,7 @@ elements. Still unsure of parameters/return variables.
 function cellInfoNew = findSteadyState(cellInfo)  
   % set initial guess
   x_0 = [0 0]
+  
   % set up space for new cell positions
   newPositions = zeros(2, cellInfo.totalNodeCount);
   j = 1;
@@ -26,6 +27,15 @@ function cellInfoNew = findSteadyState(cellInfo)
   cellInfoNew = calculateNodeInfo(cellInfoNew);
 end 
 
+function allForces = calcAllForces(cellInfo)
+  allForces = zeros(cellInfo.totalNodeCount,2);
+  for i = 1 : cellInfo.totalNodeCount
+    allForces(i,:) = calculateForce([cellInfo.xPosition(i), cellInfo.yPosition(i)], i, cellInfo);
+  end
+end
+
+
+
 %{
 Function to calculate the total force acting on a node. At steady
 state, this function should equal 0.
@@ -42,12 +52,14 @@ function force = calculateForce(nodePos, nodeNum, cellInfoRef)
       currentNorm = norm(node2Pos - nodePos);
       force = force + cellInfoRef.k_ti * (currentNorm / cellInfoRef.refLengths{nodeNum}(i) - 1) * (node2Pos - nodePos) / currentNorm;
     end
+    
   % force for external nodes 
   else
     for i = 1 : numel(cellInfoRef.nodesAdjacent{nodeNum})
       node2 = cellInfoRef.nodesAdjacent{nodeNum}(i);      
       node2Pos = [cellInfoRef.xPosition(node2), cellInfoRef.yPosition(node2)];
       currentNorm = norm(node2Pos - nodePos);
+      
       % first case, edge is external (use k_te)
       if node2 <= cellInfoRef.externalNodeCount
         force = force + cellInfoRef.k_te * (currentNorm / cellInfoRef.refLengths{nodeNum}(i) - 1) * (node2Pos - nodePos) / currentNorm;
@@ -64,7 +76,7 @@ function force = calculateForce(nodePos, nodeNum, cellInfoRef)
     if nodeIp1 == 0
       nodeIp1 = cellInfoRef.externalNodeCount;
     end
-    nodeIp2 = nodeIp1 + 1;
+    nodeIp2 = mod(nodeIp1 + 1, cellInfoRef.externalNodeCount);
     if nodeIp2 == 0
       nodeIp2 = cellInfoRef.externalNodeCount;
     end
@@ -88,7 +100,8 @@ function force = calculateForce(nodePos, nodeNum, cellInfoRef)
     angleI = acos(dot((Im1Pos - nodePos),(Ip1Pos - nodePos)) / ( norm(Im1Pos - nodePos) * norm(Ip1Pos - nodePos) )); % angle at node i
     angleIm1 = acos(dot((Im2Pos - Im1Pos),(nodePos - Im1Pos)) / ( norm(Im2Pos - Im1Pos) * norm(nodePos - Im1Pos) ));
     
-    normI = (Ip1Pos - nodePos)/norm(Ip1Pos - nodePos); % normal vector of element I (pointing outwards from cell)
+    % normal vector of element I (pointing outwards from cell)
+    normI = (Ip1Pos - nodePos)/norm(Ip1Pos - nodePos); 
     temp = normI(1);
     normI(1) = normI(2);
     normI(2) = -temp;

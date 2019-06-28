@@ -42,6 +42,28 @@ function cellInfo = initializeNetwork(externalNodeCount)
   
   cellInfo = setupInteriorNodes(cellInfo);
   cellInfo = calculateNodeInfo(cellInfo);
+  
+  %  For plotting later, a list of all the indices corresponding to the
+  %  line segments
+  inds = [1:cellInfo.externalNodeCount]';
+  cellInfo.externalLineSegments = [inds,mod(inds,cellInfo.externalNodeCount)+1];
+  tmp = sort(cellInfo.externalLineSegments,2);
+  cellInfo.lineSegments = [];
+  for i = 1:cellInfo.totalNodeCount
+    for cnc = 1:numel(cellInfo.nodesAdjacent{i})
+      cellInfo.lineSegments = [cellInfo.lineSegments;i,cellInfo.nodesAdjacent{i}(cnc)];
+    end
+  end
+  %  There are twice as many indices as we actually need for our plots,
+  %  sort and eliminate duplicates:
+  cellInfo.lineSegments = unique(sort(cellInfo.lineSegments,2),'rows');
+  cellInfo.internalLineSegments = setdiff(cellInfo.lineSegments,tmp,'rows');
+  
+  
+  nodeNum = 5;
+  pos = [cellInfo.xPosition(nodeNum), cellInfo.yPosition(nodeNum)];
+
+  calculateForce(pos, nodeNum, cellInfo)
 end
 
 %{
@@ -109,36 +131,6 @@ function cellInfo = setupInteriorNodes(cellInfo)
     end
     
     cellInfo.nodesAdjacent{i} = inds;
-  end
-  
-  %  For plotting later, a list of all the indices corresponding to the
-  %  line segments
-  inds = [1:cellInfo.externalNodeCount]';
-  cellInfo.externalLineSegments = [inds,mod(inds,cellInfo.externalNodeCount)+1];
-  tmp = sort(cellInfo.externalLineSegments,2);
-  cellInfo.lineSegments = [];
-  for i = 1:cellInfo.totalNodeCount
-    for cnc = 1:numel(cellInfo.nodesAdjacent{i})
-      cellInfo.lineSegments = [cellInfo.lineSegments;i,cellInfo.nodesAdjacent{i}(cnc)];
-    end
-  end
-  %  There are twice as many indices as we actually need for our plots,
-  %  sort and eliminate duplicates:
-  cellInfo.lineSegments = unique(sort(cellInfo.lineSegments,2),'rows');
-  cellInfo.internalLineSegments = setdiff(cellInfo.lineSegments,tmp,'rows');
-
-  %  Check the connectivities
-  do_connectivity_plot = false;
-  if do_connectivity_plot
-    myc = 'rgbmyck'; myc = [myc,myc]; myc = [myc,myc]; myc = [myc,myc];
-    close(figure(1)); figure(1); plot(cellInfo.xPosition,cellInfo.yPosition,'k'); hold on;
-    for i = 1:numel(cellInfo.nodesAdjacent)
-      for connc = 1:numel(cellInfo.nodesAdjacent{i})
-        plot([cellInfo.xPosition(i),cellInfo.xPosition(cellInfo.nodesAdjacent{i}(connc))],...
-          [cellInfo.yPosition(i),cellInfo.yPosition(cellInfo.nodesAdjacent{i}(connc))],myc(i),'LineWidth',2);
-        pause
-      end
-    end
   end
             
   warning(['Mesh not yet perfected (e.g. equidistant nodes, ',...
