@@ -4,36 +4,33 @@ elements. Still unsure of parameters/return variables.
 %}
 function cellInfoNew = findSteadyState(cellInfo)  
   % set initial guess
-  x_0 = [0 0]
+  x_0 = [cellInfo.xPosition - .5, cellInfo.yPosition];
   
-  % set up space for new cell positions
-  newPositions = zeros(2, cellInfo.totalNodeCount);
-  j = 1;
-  
-  for i = 1 : cellInfo.totalNodeCount
-    newPositions(j:j+1) = fsolve(@(x) calculateForce(x, i, cellInfo), x_0);
-    j = j + 2;
-  end
+  options = optimoptions(@fsolve,'MaxFunctionEvaluations',20000, 'MaxIterations', 1500)
+  newPositions = fsolve(@(x) calcAllForces(x, cellInfo), x_0, options);
+
   
   % we need to find out how to plot the new state of the cell correctly
   %plot(newPositions(1,:), newPositions(2,:));
   
   % use positions to create cellInfoNew, which is the cell at steady state
   cellInfoNew = cellInfo;
-  cellInfoNew.xPosition = transpose(newPositions(1,:));
-  cellInfoNew.yPosition = transpose(newPositions(2,:));
+  cellInfoNew.xPosition = newPositions(:,1);
+  cellInfoNew.yPosition = newPositions(:,2);
   
-  % find out how to access 'nodeInfo' function
   cellInfoNew = calculateNodeInfo(cellInfoNew);
 end 
 
-function allForces = calcAllForces(cellInfo)
-  allForces = zeros(cellInfo.totalNodeCount,2);
-  for i = 1 : cellInfo.totalNodeCount
-    allForces(i,:) = calculateForce([cellInfo.xPosition(i), cellInfo.yPosition(i)], i, cellInfo);
+%{
+Function to calculate all forces in the network, to be used by 'fsolve'
+function. Puts forces into column vector.
+%}
+function allForces = calcAllForces(positions, cellInfo)
+  allForces = zeros(cellInfo.totalNodeCount, 2);
+  for i = 1 : numel(positions(:,1))
+    allForces(i,:) = calculateForce([positions(i,1), positions(i,2)], i, cellInfo);
   end
 end
-
 
 
 %{
