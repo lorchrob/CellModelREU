@@ -1,7 +1,7 @@
 %{
 Function to deform a cell by moving around some of the nodes. The nodes to
 be moved are specified by 'nodeNums' (an array of integers), and they are each 
-moved by the amount specified in positionChanges (an nx2 array of pairs of
+moved by the amount specified in 'positionChanges' (an nx2 array of pairs of
 floats). 
 
 As an example, if the second integer in 'nodeNums' is 5 and the second pair
@@ -12,8 +12,6 @@ NOTE: There must be exactly one pair of position changes (x, y) for each node nu
 (i.e., numel(positionChanges) = 2 * numel(nodeNums)).
 
 NOTE: The displaced nodes will be fixed at their new position.
-
-NOTE: Make sure fsolve doesn't update
 %}
 function cellInfoNew = deformCellDisplacement(cellInfo, nodeNums, positionChanges)
   cellInfoNew = cellInfo;
