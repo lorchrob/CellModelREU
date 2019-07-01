@@ -1,21 +1,5 @@
-%{ 
-TO DO:
-  * make structs to store information about the network
-      - number of internal and external nodes
-      - position   
-      - physical properties such as reference lengths, pressure,
-        viscoelasticity, etc.
-  * generate mesh
-  * find out what is given/passed into the system besides node count
-  * possibly use varargin for optional parameters
-%}
-
 %{
 Main function to initialize the system
-NOTE: not sure yet if necessary to use all three returned structs (as in
-Barber's program)
-NOTE: if I understand correctly, the # of external nodes is specified,
-outline is made, and then middle is filled in?
 %}
 function cellInfo = initializeNetwork(externalNodeCount)  
   % set initial values for some fields of the 'cellInfo' struct
@@ -58,6 +42,11 @@ function cellInfo = initializeNetwork(externalNodeCount)
   %  sort and eliminate duplicates:
   cellInfo.lineSegments = unique(sort(cellInfo.lineSegments,2),'rows');
   cellInfo.internalLineSegments = setdiff(cellInfo.lineSegments,tmp,'rows');
+  
+  % For now, we say that no nodes are fixed and there are no external
+  % forces (may be updated later)
+  cellInfo.isFixed = false(cellInfo.totalNodeCount, 1);
+  cellInfo.externalForces = zeros(cellInfo.totalNodeCount, 2); 
 end
 
 %{

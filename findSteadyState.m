@@ -6,12 +6,8 @@ function cellInfoNew = findSteadyState(cellInfo)
   % set initial guess
   x_0 = [cellInfo.xPosition - .5, cellInfo.yPosition];
   
-  options = optimoptions(@fsolve,'MaxFunctionEvaluations',20000, 'MaxIterations', 1500)
+  options = optimoptions(@fsolve,'MaxFunctionEvaluations', 20000, 'MaxIterations', 1500)
   newPositions = fsolve(@(x) calcAllForces(x, cellInfo), x_0, options);
-
-  
-  % we need to find out how to plot the new state of the cell correctly
-  %plot(newPositions(1,:), newPositions(2,:));
   
   % use positions to create cellInfoNew, which is the cell at steady state
   cellInfoNew = cellInfo;
@@ -27,8 +23,15 @@ function. Puts forces into column vector.
 %}
 function allForces = calcAllForces(positions, cellInfo)
   allForces = zeros(cellInfo.totalNodeCount, 2);
+  
   for i = 1 : numel(positions(:,1))
-    allForces(i,:) = calculateForce([positions(i,1), positions(i,2)], i, cellInfo);
+    % only calculate forces on nodes that are not fixed
+    if cellInfo.isFixed(i) == 0
+      allForces(i,:) = calculateForce(positions, i, cellInfo);
+    % set forces of fixed nodes to 0
+    else
+      allForces(i,:) = [0 0];
+    end
   end
 end
 
@@ -37,15 +40,17 @@ end
 Function to calculate the total force acting on a node. At steady
 state, this function should equal 0.
 %}
-function force = calculateForce(nodePos, nodeNum, cellInfoRef)
+function force = calculateForce(positions, nodeNum, cellInfoRef)
 % first, determine if node is internal or external, and then solve the
 % appropriate force equation
+  nodePos = [positions(nodeNum, 1), positions(nodeNum, 2)];
   force = [0, 0];
   % force for internal nodes
   if nodeNum > cellInfoRef.externalNodeCount % check if broken
     for i = 1 : numel(cellInfoRef.nodesAdjacent{nodeNum})
       node2 = cellInfoRef.nodesAdjacent{nodeNum}(i);
-      node2Pos = [cellInfoRef.xPosition(node2), cellInfoRef.yPosition(node2)];
+      %node2Pos = [cellInfoRef.xPosition(node2), cellInfoRef.yPosition(node2)];
+      node2Pos = [positions(node2, 1), positions(node2, 2)];
       currentNorm = norm(node2Pos - nodePos);
       force = force + cellInfoRef.k_ti * (currentNorm / cellInfoRef.refLengths{nodeNum}(i) - 1) * (node2Pos - nodePos) / currentNorm;
     end
@@ -54,7 +59,8 @@ function force = calculateForce(nodePos, nodeNum, cellInfoRef)
   else
     for i = 1 : numel(cellInfoRef.nodesAdjacent{nodeNum})
       node2 = cellInfoRef.nodesAdjacent{nodeNum}(i);      
-      node2Pos = [cellInfoRef.xPosition(node2), cellInfoRef.yPosition(node2)];
+      %node2Pos = [cellInfoRef.xPosition(node2), cellInfoRef.yPosition(node2)];
+      node2Pos = [positions(node2, 1), positions(node2, 2)];
       currentNorm = norm(node2Pos - nodePos);
       
       % first case, edge is external (use k_te)
@@ -87,10 +93,14 @@ function force = calculateForce(nodePos, nodeNum, cellInfoRef)
     end
     
     % Getting corresponding node positions for neighboring external nodes
-    Ip1Pos = [cellInfoRef.xPosition(nodeIp1), cellInfoRef.yPosition(nodeIp1)]; 
-    Ip2Pos = [cellInfoRef.xPosition(nodeIp2), cellInfoRef.yPosition(nodeIp2)];
-    Im1Pos = [cellInfoRef.xPosition(nodeIm1), cellInfoRef.yPosition(nodeIm1)];
-    Im2Pos = [cellInfoRef.xPosition(nodeIm2), cellInfoRef.yPosition(nodeIm2)];
+    %Ip1Pos = [cellInfoRef.xPosition(nodeIp1), cellInfoRef.yPosition(nodeIp1)]; 
+    Ip1Pos = [positions(nodeIp1, 1), positions(nodeIp1, 2)];
+    %Ip2Pos = [cellInfoRef.xPosition(nodeIp2), cellInfoRef.yPosition(nodeIp2)];
+    Ip2Pos = [positions(nodeIp2, 1), positions(nodeIp2, 2)];
+    %Im1Pos = [cellInfoRef.xPosition(nodeIm1), cellInfoRef.yPosition(nodeIm1)];
+    Im1Pos = [positions(nodeIm1, 1), positions(nodeIm1, 2)];
+    %Im2Pos = [cellInfoRef.xPosition(nodeIm2), cellInfoRef.yPosition(nodeIm2)];
+    Im2Pos = [positions(nodeIm2, 1), positions(nodeIm2, 2)];
     
     % Getting angles between external elements
     angleIp1 = acos(dot((nodePos - Ip1Pos),(Ip2Pos - Ip1Pos)) / ( norm(nodePos - Ip1Pos) * norm(Ip2Pos - Ip1Pos) ));
@@ -115,4 +125,8 @@ function force = calculateForce(nodePos, nodeNum, cellInfoRef)
     force = force + normI * (-2 * cellInfoRef.k_be * (tan(angleIp1/2) - tan(angleI/2))) / (cellInfoRef.refLengths{nodeNum}(1) * norm(Ip1Pos - nodePos));
     
   end
+  
+  % add external force, zero vector unless otherwise changed by
+  % 'deformCellForce'
+  force = force + cellInfoRef.externalForces(nodeNum,:);
 end

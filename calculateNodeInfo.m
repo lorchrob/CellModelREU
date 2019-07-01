@@ -1,9 +1,5 @@
 %{
-Barber's function, still needs some adaptation...
-Function to calculate more info about the cell
-NOTE: find which fields are unnecessary
-NOTE: triareainfo function?
-NOTE: more descriptive variable names
+Function to calculate more info about the cell (adapted from Barber)
 %}
 function cellInfo = calculateNodeInfo(cellInfo)
   %  Because this info is stored for each node, some info is redundant. For
