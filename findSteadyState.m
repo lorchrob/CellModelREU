@@ -4,10 +4,10 @@ elements. Still unsure of parameters/return variables.
 %}
 function cellInfoNew = findSteadyState(cellInfo)  
   % set initial guess
-  x_0 = [cellInfo.xPosition - .5, cellInfo.yPosition];
+  x_0 = [cellInfo.xPosition, cellInfo.yPosition];
   
-  options = optimoptions(@fsolve,'MaxFunctionEvaluations', 20000, 'MaxIterations', 1500)
-  newPositions = fsolve(@(x) calcAllForces(x, cellInfo), x_0, options);
+  options = optimoptions(@fsolve,'MaxFunctionEvaluations', 40000, 'MaxIterations', 3000)
+  [newPositions, forceValues] = fsolve(@(x) calcAllForces(x, cellInfo), x_0, options);
   
   % use positions to create cellInfoNew, which is the cell at steady state
   cellInfoNew = cellInfo;
@@ -15,6 +15,8 @@ function cellInfoNew = findSteadyState(cellInfo)
   cellInfoNew.yPosition = newPositions(:,2);
   
   cellInfoNew = calculateNodeInfo(cellInfoNew);
+  
+  forceValues
 end 
 
 %{
@@ -24,13 +26,21 @@ function. Puts forces into column vector.
 function allForces = calcAllForces(positions, cellInfo)
   allForces = zeros(cellInfo.totalNodeCount, 2);
   
+  % set positions of fixed nodes
   for i = 1 : numel(positions(:,1))
-    % only calculate forces on nodes that are not fixed
-    if cellInfo.isFixed(i) == 0
-      allForces(i,:) = calculateForce(positions, i, cellInfo);
+    if cellInfo.isFixed(i)
+      positions(i,:) = [cellInfo.xPosition(i), cellInfo.yPosition(i)];
+    end
+  end
+  
+  
+  for i = 1 : numel(positions(:,1))
     % set forces of fixed nodes to 0
-    else
+    if cellInfo.isFixed(i)
       allForces(i,:) = [0 0];
+    % otherwise, calculate force using our equation
+    else
+      allForces(i,:) = calculateForce(positions, i, cellInfo);
     end
   end
 end
