@@ -6,7 +6,7 @@ function cellInfoNew = findSteadyState(cellInfo)
   % set initial guess
   x_0 = [cellInfo.xPosition, cellInfo.yPosition];
   
-  options = optimoptions(@fsolve,'MaxFunctionEvaluations', 40000, 'MaxIterations', 3000)
+  options = optimoptions(@fsolve,'MaxFunctionEvaluations', 100000, 'MaxIterations', 10000)
   [newPositions, forceValues] = fsolve(@(x) calcAllForces(x, cellInfo), x_0, options);
   
   % use positions to create cellInfoNew, which is the cell at steady state
@@ -32,7 +32,6 @@ function allForces = calcAllForces(positions, cellInfo)
       positions(i,:) = [cellInfo.xPosition(i), cellInfo.yPosition(i)];
     end
   end
-  
   
   for i = 1 : numel(positions(:,1))
     % set forces of fixed nodes to 0
@@ -113,9 +112,12 @@ function force = calculateForce(positions, nodeNum, cellInfoRef)
     Im2Pos = [positions(nodeIm2, 1), positions(nodeIm2, 2)];
     
     % Getting angles between external elements
-    angleIp1 = acos(dot((nodePos - Ip1Pos),(Ip2Pos - Ip1Pos)) / ( norm(nodePos - Ip1Pos) * norm(Ip2Pos - Ip1Pos) ));
-    angleI = acos(dot((Im1Pos - nodePos),(Ip1Pos - nodePos)) / ( norm(Im1Pos - nodePos) * norm(Ip1Pos - nodePos) )); % angle at node i
-    angleIm1 = acos(dot((Im2Pos - Im1Pos),(nodePos - Im1Pos)) / ( norm(Im2Pos - Im1Pos) * norm(nodePos - Im1Pos) ));
+    %angleIp1 = acos(dot((nodePos - Ip1Pos),(Ip2Pos - Ip1Pos)) / ( norm(nodePos - Ip1Pos) * norm(Ip2Pos - Ip1Pos) ));
+    angleIp1 = atan2( crossProd(nodePos - Ip1Pos, Ip2Pos - Ip1Pos), dot(nodePos - Ip1Pos, Ip2Pos - Ip1Pos));
+    %angleI = acos(dot((Im1Pos - nodePos),(Ip1Pos - nodePos)) / ( norm(Im1Pos - nodePos) * norm(Ip1Pos - nodePos) )); % angle at node i
+    angleI = atan2( crossProd(Im1Pos - nodePos, Ip1Pos - nodePos), dot(Im1Pos - nodePos, Ip1Pos - nodePos));
+    %angleIm1 = acos(dot((Im2Pos - Im1Pos),(nodePos - Im1Pos)) / ( norm(Im2Pos - Im1Pos) * norm(nodePos - Im1Pos) ));
+    angleIm1 = atan2( crossProd(Im2Pos - Im1Pos, nodePos - Im1Pos), dot(Im2Pos - Im1Pos, nodePos - Im1Pos));
     
     % normal vector of element I (pointing outwards from cell)
     normI = (Ip1Pos - nodePos)/norm(Ip1Pos - nodePos); 
@@ -139,4 +141,8 @@ function force = calculateForce(positions, nodeNum, cellInfoRef)
   % add external force, zero vector unless otherwise changed by
   % 'deformCellForce'
   force = force + cellInfoRef.externalForces(nodeNum,:);
+end
+
+function cross = crossProd(v1, v2)
+  cross = v1(1) * v2(2) - v1(2) * v2(1);
 end
