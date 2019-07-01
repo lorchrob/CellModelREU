@@ -58,12 +58,6 @@ function cellInfo = initializeNetwork(externalNodeCount)
   %  sort and eliminate duplicates:
   cellInfo.lineSegments = unique(sort(cellInfo.lineSegments,2),'rows');
   cellInfo.internalLineSegments = setdiff(cellInfo.lineSegments,tmp,'rows');
-  
-  
-  nodeNum = 5;
-  pos = [cellInfo.xPosition(nodeNum), cellInfo.yPosition(nodeNum)];
-
-  calculateForce(pos, nodeNum, cellInfo)
 end
 
 %{
