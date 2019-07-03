@@ -1,26 +1,4 @@
 %{
-Main function for finding the steady state for the system of viscoelastic
-elements. Still unsure of parameters/return variables.
-%}
-function cellInfoNew = findSteadyState(cellInfo)  
-  % set initial guess
-  x_0 = [cellInfo.xPosition, cellInfo.yPosition];
-  
-  options = optimoptions(@fsolve,'MaxFunctionEvaluations', 100000, 'MaxIterations', 10000)
-  [newPositions, forceValues] = fsolve(@(x) calcAllForces(x, cellInfo), x_0, options);
-  
-  % use positions to create cellInfoNew, which is the cell at steady state
-  cellInfoNew = cellInfo;
-  cellInfoNew.xPosition = newPositions(:,1);
-  cellInfoNew.yPosition = newPositions(:,2);
-  
-  cellInfoNew = calculateNodeInfo(cellInfoNew);
-  
-  forceValues
-end 
-
-
-%{
 Function to calculate the total force acting on a node. At steady
 state, this function should equal 0.
 %}
@@ -108,9 +86,9 @@ function force = calculateForce(positions, nodeNum, cellInfoRef)
     % Adding shearing stress force
     % note about l_refs: the external references are always equal (first
     % and last l_ref of any external node)
-    force = force + normIm1 * (-2 * cellInfoRef.k_be * (tan(angleI/2) - tan(angleIm1/2))) / (cellInfoRef.refLengths{nodeNum}(end) * norm(nodePos - Im1Pos));
-    force = force + normI * (-2 * cellInfoRef.k_be * (tan(angleIp1/2) - tan(angleI/2))) / (cellInfoRef.refLengths{nodeNum}(1) * norm(Ip1Pos - nodePos));
-    
+%     force = force + normIm1 * (-2 * cellInfoRef.k_be * (tan(angleI/2) - tan(angleIm1/2))) / (cellInfoRef.refLengths{nodeNum}(end) * norm(nodePos - Im1Pos));
+%     force = force + normI * (-2 * cellInfoRef.k_be * (tan(angleIp1/2) - tan(angleI/2))) / (cellInfoRef.refLengths{nodeNum}(1) * norm(Ip1Pos - nodePos));
+%     
   end
   
   % add external force, zero vector unless otherwise changed by
