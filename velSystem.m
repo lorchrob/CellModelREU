@@ -1,3 +1,7 @@
+%{
+The system of equations for velocity (given position). Returns A, b, where velocity = x and
+we have Ax = b. Used by various stepping methods.
+%}
 function [A,b] = velSystem(cellInfo)
   matSize = cellInfo.totalNodeCount * 2;
   A = zeros(matSize);

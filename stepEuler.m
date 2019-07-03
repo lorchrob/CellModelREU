@@ -15,10 +15,12 @@ function cellInfoNew = EulerStep(cellInfo, dt, totalTime)
     pos(2:2:end) = cellInfoNew.yPosition;
     vels = getVelocities(pos, cellInfoNew);
 
+    % Euler equations
     cellInfoNew.xPosition = cellInfoNew.xPosition + vels(1:2:end)*dt;
     cellInfoNew.yPosition = cellInfoNew.yPosition + vels(2:2:end)*dt;
 %     cellInfoNew = calculateNodeInfo(cellInfoNew);
     
+    % attempt to plot and print at specified time steps
     if i >= tPlot
       plot = cellInfoNew;
       plotCell(plot);

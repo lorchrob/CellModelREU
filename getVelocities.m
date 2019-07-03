@@ -1,3 +1,6 @@
+%{
+Using velocity system, returns velocities when given positions
+%}
 function velocities = getVelocities(positions, cellInfo)
   cellInfoNew = cellInfo;
   cellInfoNew.xPosition = positions(1:2:end);
