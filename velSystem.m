@@ -118,7 +118,7 @@ function [A,b] = velSystem(cellInfo)
         b(i+1) = b(i+1) - cellInfo.k_te * (cellInfo.lengths{node}(j) / cellInfo.refLengths{node}(j) - 1) * cellInfo.tys{node}(j);
       else
         b(i) = b(i) - cellInfo.k_ti * (cellInfo.lengths{node}(j) / cellInfo.refLengths{node}(j) - 1) * cellInfo.txs{node}(j);
-        b(i) = b(i) - cellInfo.k_ti * (cellInfo.lengths{node}(j) / cellInfo.refLengths{node}(j) - 1) * cellInfo.tys{node}(j);
+        b(i+1) = b(i+1) - cellInfo.k_ti * (cellInfo.lengths{node}(j) / cellInfo.refLengths{node}(j) - 1) * cellInfo.tys{node}(j);
       end
       
     end
@@ -134,4 +134,19 @@ function [A,b] = velSystem(cellInfo)
 %       b(i+1) = b(i+1) - (-2) * cellInfo.k_be * ( tan((cellInfo.alphs{shiftNodep1(node)}(end)-pi)/2) - tan((cellInfo.alphs{node}(end)-pi)/2) ) / ( cellInfo.refLengths{node}(end) * cellInfo.lengths{node}(end) ) * -cellInfo.nys{node}(end);
 %     end
   end
+  
+  for i = 1:cellInfo.totalNodeCount
+    if cellInfo.isFixed(i)
+      A(i*2-1,:) = 0;
+      A(i*2-1, i*2-1) = 1;
+      
+      A(i*2,:) = 0;
+      A(i*2, i*2) = 1;
+      
+      b(i*2-1) = 0;
+      b(i*2) = 0;
+    
+    end
+  end
+  
 end

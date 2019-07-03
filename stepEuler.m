@@ -2,10 +2,10 @@
 Simple function to time step, using Euler's method. t_0 (initial time) is
 assumed to be 0).
 %}
-function cellInfoNew = EulerStep(cellInfo, dt, totalTime) 
+function cellInfoNew = stepEuler(cellInfo, dt, totalTime) 
   cellInfoNew = cellInfo;
   tPlot = 0;
-  dtPlot = 0.5;
+  dtPlot = 0.01;
   
   for i = dt:dt:totalTime
 %     [A, b] = velSystem(cellInfoNew);
@@ -18,12 +18,12 @@ function cellInfoNew = EulerStep(cellInfo, dt, totalTime)
     % Euler equations
     cellInfoNew.xPosition = cellInfoNew.xPosition + vels(1:2:end)*dt;
     cellInfoNew.yPosition = cellInfoNew.yPosition + vels(2:2:end)*dt;
-%     cellInfoNew = calculateNodeInfo(cellInfoNew);
+    cellInfoNew = calculateNodeInfo(cellInfoNew);
     
     % attempt to plot and print at specified time steps
     if i >= tPlot
-      plot = cellInfoNew;
-      plotCell(plot);
+      plotCell(cellInfoNew);
+      drawnow;
       fprintf("Time: %.1f\n", i);
       tPlot = tPlot + dtPlot;
     end

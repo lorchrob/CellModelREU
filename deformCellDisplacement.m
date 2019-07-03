@@ -21,7 +21,9 @@ function cellInfoNew = deformCellDisplacement(cellInfo, nodeNums, positionChange
     cellInfoNew.xPosition(nodeNums(i)) = cellInfoNew.xPosition(nodeNums(i)) + positionChanges(i, 1);
     cellInfoNew.yPosition(nodeNums(i)) = cellInfoNew.yPosition(nodeNums(i)) + positionChanges(i, 2);
     
+    cellInfoNew = calculateNodeInfo(cellInfoNew);
     % fix (hold constant, not repair) the nodes
     %cellInfoNew.isFixed(nodeNums(i)) = true;
+    cellInfoNew.isFixed([1,2]) = true;
   end
 end
