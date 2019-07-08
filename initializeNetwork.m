@@ -7,11 +7,11 @@ function cellInfo = initializeNetwork(externalNodeCount)
   cellInfo.radius = 12.4/2; 
   cellInfo.refArea = pi*cellInfo.radius^2;
   % underscores represent subscripts
-  cellInfo.k_te = 1200; %1200
-  cellInfo.k_ti = 1200; %1200
-  cellInfo.mu_e = 200; %200
-  cellInfo.mu_i = 100; %100
-  cellInfo.k_be = 90;
+  cellInfo.k_te = 1; %1200
+  cellInfo.k_ti = 1; %1200
+  cellInfo.mu_e = 5; %200
+  cellInfo.mu_i = 5; %100
+  cellInfo.k_be = .1; %90
   cellInfo.k_bi = 0;
   
   % distance from center to the external nodes

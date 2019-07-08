@@ -107,6 +107,9 @@ function [A,b] = velSystem(cellInfo)
       
     end
   end
+  
+%   cellInfo.shears = zeros(cellInfo.externalNodeCount, 2);
+%   cellInfo.tensions = cellInfo.lengths;
     
   % Setting b vector.
   for i = 1:2:matSize
@@ -114,11 +117,18 @@ function [A,b] = velSystem(cellInfo)
     for j = 1:numel(cellInfo.nodesAdjacent{node})
       
       if cellInfo.nodesAdjacent{node}(j) <= cellInfo.externalNodeCount & node <= cellInfo.externalNodeCount
-        b(i) = b(i) - cellInfo.k_te * (cellInfo.lengths{node}(j) / cellInfo.refLengths{node}(j) - 1) * cellInfo.txs{node}(j);
-        b(i+1) = b(i+1) - cellInfo.k_te * (cellInfo.lengths{node}(j) / cellInfo.refLengths{node}(j) - 1) * cellInfo.tys{node}(j);
+        tensionX = - cellInfo.k_te * (cellInfo.lengths{node}(j) / cellInfo.refLengths{node}(j) - 1) * cellInfo.txs{node}(j);
+        b(i) = b(i) + tensionX;
+        tensionY = - cellInfo.k_te * (cellInfo.lengths{node}(j) / cellInfo.refLengths{node}(j) - 1) * cellInfo.tys{node}(j);
+        b(i+1) = b(i+1) + tensionY;
+        
+%         cellInfo.tensions{node}(j) = [tensionX, tensionY];
+        
       else
-        b(i) = b(i) - cellInfo.k_ti * (cellInfo.lengths{node}(j) / cellInfo.refLengths{node}(j) - 1) * cellInfo.txs{node}(j);
-        b(i+1) = b(i+1) - cellInfo.k_ti * (cellInfo.lengths{node}(j) / cellInfo.refLengths{node}(j) - 1) * cellInfo.tys{node}(j);
+        tensionX = - cellInfo.k_ti * (cellInfo.lengths{node}(j) / cellInfo.refLengths{node}(j) - 1) * cellInfo.txs{node}(j);
+        b(i) = b(i) + tensionX;
+        tensionY = - cellInfo.k_ti * (cellInfo.lengths{node}(j) / cellInfo.refLengths{node}(j) - 1) * cellInfo.tys{node}(j);
+        b(i+1) = b(i+1) + tensionY;
       end
       
     end
@@ -128,10 +138,12 @@ function [A,b] = velSystem(cellInfo)
      if node <= cellInfo.externalNodeCount
        shiftNodep1 = circshift(1:cellInfo.externalNodeCount, -1);
        shiftNodem1 = circshift(1:cellInfo.externalNodeCount, 1);
-       b(i) = b(i) - (-2) * cellInfo.k_be * ( tan((cellInfo.alphs{node}(end)-pi)/2) - tan((cellInfo.alphs{shiftNodem1(node)}(end)-pi)/2) ) / ( cellInfo.refLengths{node}(1) * cellInfo.lengths{node}(1) ) * cellInfo.nxs{node}(1);
-       b(i) = b(i) - (-2) * cellInfo.k_be * ( tan((cellInfo.alphs{shiftNodep1(node)}(end)-pi)/2) - tan((cellInfo.alphs{node}(end)-pi)/2) ) / ( cellInfo.refLengths{node}(end) * cellInfo.lengths{node}(end) ) * -cellInfo.nxs{node}(end);
-       b(i+1) = b(i+1) - (-2) * cellInfo.k_be * ( tan((cellInfo.alphs{node}(end)-pi)/2) - tan((cellInfo.alphs{shiftNodem1(node)}(end)-pi)/2) ) / ( cellInfo.refLengths{node}(1) * cellInfo.lengths{node}(1) ) * cellInfo.nys{node}(1);
-       b(i+1) = b(i+1) - (-2) * cellInfo.k_be * ( tan((cellInfo.alphs{shiftNodep1(node)}(end)-pi)/2) - tan((cellInfo.alphs{node}(end)-pi)/2) ) / ( cellInfo.refLengths{node}(end) * cellInfo.lengths{node}(end) ) * -cellInfo.nys{node}(end);
+       shearForceX = - (-2) * cellInfo.k_be * ( tan((cellInfo.alphs{node}(end)-pi)/2) - tan((cellInfo.alphs{shiftNodem1(node)}(end)-pi)/2) ) / ( cellInfo.refLengths{node}(1) * cellInfo.lengths{node}(1) ) * -cellInfo.nxs{node}(1)...
+                     - (-2) * cellInfo.k_be * ( tan((cellInfo.alphs{shiftNodep1(node)}(end)-pi)/2) - tan((cellInfo.alphs{node}(end)-pi)/2) ) / ( cellInfo.refLengths{node}(end) * cellInfo.lengths{node}(end) ) * -cellInfo.nxs{node}(end);
+       shearForceY = - (-2) * cellInfo.k_be * ( tan((cellInfo.alphs{node}(end)-pi)/2) - tan((cellInfo.alphs{shiftNodem1(node)}(end)-pi)/2) ) / ( cellInfo.refLengths{node}(1) * cellInfo.lengths{node}(1) ) * -cellInfo.nys{node}(1)...
+                     - (-2) * cellInfo.k_be * ( tan((cellInfo.alphs{shiftNodep1(node)}(end)-pi)/2) - tan((cellInfo.alphs{node}(end)-pi)/2) ) / ( cellInfo.refLengths{node}(end) * cellInfo.lengths{node}(end) ) * -cellInfo.nys{node}(end);
+       b(i) = b(i) + shearForceX; %+ shearForceX; % also had - for both at one point
+       b(i+1) = b(i+1) - shearForceY; %+ shearForceY;
      end
   end
   

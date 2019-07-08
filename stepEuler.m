@@ -6,7 +6,7 @@ function cellInfoNew = stepEuler(cellInfo, dt, totalTime)
   cellInfo.modelType = "timeStepper";
   cellInfoNew = cellInfo;
   tPlot = 0;
-  dtPlot = 0.01;
+  dtPlot = 0.1;
   
   for i = dt:dt:totalTime
 %     [A, b] = velSystem(cellInfoNew);
