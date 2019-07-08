@@ -125,14 +125,14 @@ function [A,b] = velSystem(cellInfo)
     
     %shearing forces
     
-%     if node <= cellInfo.externalNodeCount
-%       shiftNodep1 = circshift(1:cellInfo.externalNodeCount, -1);
-%       shiftNodem1 = circshift(1:cellInfo.externalNodeCount, 1);
-%       b(i) = b(i) - (-2) * cellInfo.k_be * ( tan((cellInfo.alphs{node}(end)-pi)/2) - tan((cellInfo.alphs{shiftNodem1(node)}(end)-pi)/2) ) / ( cellInfo.refLengths{node}(1) * cellInfo.lengths{node}(1) ) * cellInfo.nxs{node}(1);
-%       b(i) = b(i) - (-2) * cellInfo.k_be * ( tan((cellInfo.alphs{shiftNodep1(node)}(end)-pi)/2) - tan((cellInfo.alphs{node}(end)-pi)/2) ) / ( cellInfo.refLengths{node}(end) * cellInfo.lengths{node}(end) ) * -cellInfo.nxs{node}(end);
-%       b(i+1) = b(i+1) - (-2) * cellInfo.k_be * ( tan((cellInfo.alphs{node}(end)-pi)/2) - tan((cellInfo.alphs{shiftNodem1(node)}(end)-pi)/2) ) / ( cellInfo.refLengths{node}(1) * cellInfo.lengths{node}(1) ) * cellInfo.nys{node}(1);
-%       b(i+1) = b(i+1) - (-2) * cellInfo.k_be * ( tan((cellInfo.alphs{shiftNodep1(node)}(end)-pi)/2) - tan((cellInfo.alphs{node}(end)-pi)/2) ) / ( cellInfo.refLengths{node}(end) * cellInfo.lengths{node}(end) ) * -cellInfo.nys{node}(end);
-%     end
+     if node <= cellInfo.externalNodeCount
+       shiftNodep1 = circshift(1:cellInfo.externalNodeCount, -1);
+       shiftNodem1 = circshift(1:cellInfo.externalNodeCount, 1);
+       b(i) = b(i) - (-2) * cellInfo.k_be * ( tan((cellInfo.alphs{node}(end)-pi)/2) - tan((cellInfo.alphs{shiftNodem1(node)}(end)-pi)/2) ) / ( cellInfo.refLengths{node}(1) * cellInfo.lengths{node}(1) ) * cellInfo.nxs{node}(1);
+       b(i) = b(i) - (-2) * cellInfo.k_be * ( tan((cellInfo.alphs{shiftNodep1(node)}(end)-pi)/2) - tan((cellInfo.alphs{node}(end)-pi)/2) ) / ( cellInfo.refLengths{node}(end) * cellInfo.lengths{node}(end) ) * -cellInfo.nxs{node}(end);
+       b(i+1) = b(i+1) - (-2) * cellInfo.k_be * ( tan((cellInfo.alphs{node}(end)-pi)/2) - tan((cellInfo.alphs{shiftNodem1(node)}(end)-pi)/2) ) / ( cellInfo.refLengths{node}(1) * cellInfo.lengths{node}(1) ) * cellInfo.nys{node}(1);
+       b(i+1) = b(i+1) - (-2) * cellInfo.k_be * ( tan((cellInfo.alphs{shiftNodep1(node)}(end)-pi)/2) - tan((cellInfo.alphs{node}(end)-pi)/2) ) / ( cellInfo.refLengths{node}(end) * cellInfo.lengths{node}(end) ) * -cellInfo.nys{node}(end);
+     end
   end
   
   for i = 1:cellInfo.totalNodeCount

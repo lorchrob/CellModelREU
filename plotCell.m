@@ -14,5 +14,15 @@ function plotCell(cellInfo)
      end
      hold on
   end
+  
+  if isfield(cellInfo, "modelType") && cellInfo.modelType == "timeStepper"
+    for i = 1 : numel(cellInfo.xPosition) 
+      quiver(cellInfo.xPosition(i), cellInfo.yPosition(i),... 
+             cellInfo.xVelocity(i), cellInfo.yVelocity(i),...
+             0, 'k');
+      hold on
+    end
+  end
+  
   hold off
 end

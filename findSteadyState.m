@@ -2,7 +2,8 @@
 Main function for finding the steady state for the system of viscoelastic
 elements. Still unsure of parameters/return variables.
 %}
-function cellInfoNew = findSteadyState(cellInfo)  
+function cellInfoNew = findSteadyState(cellInfo) 
+  cellInfo.modelType = "steadyStateSolver";
   % set initial guess
   x_0 = [cellInfo.xPosition, cellInfo.yPosition];
   
