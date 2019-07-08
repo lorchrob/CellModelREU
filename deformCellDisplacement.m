@@ -26,10 +26,8 @@ function cellInfoNew = deformCellDisplacement(cellInfo, nodeNums, positionChange
     %cellInfoNew.isFixed(nodeNums(i)) = true; 
   end
   
-  %% fixing for single node tests
-  for i = 1 :cellInfo.totalNodeCount
-    if i ~= nodeNums(1)
-      cellInfoNew.isFixed(i) = true;
-    end
-  end
+  %% fixing for tests
+  cellInfoNew.isFixed = ones(cellInfo.totalNodeCount, 1);
+  cellInfoNew.isFixed(nodeNums) = false;
+end
 

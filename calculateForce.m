@@ -86,8 +86,8 @@ function force = calculateForce(positions, nodeNum, cellInfoRef)
     % Adding shearing stress force
     % note about l_refs: the external references are always equal (first
     % and last l_ref of any external node)
-     %force = force + normIm1 * (-2 * cellInfoRef.k_be * (tan(angleI/2) - tan(angleIm1/2))) / (cellInfoRef.refLengths{nodeNum}(end) * norm(nodePos - Im1Pos));
-     %force = force - normI * (-2 * cellInfoRef.k_be * (tan(angleIp1/2) - tan(angleI/2))) / (cellInfoRef.refLengths{nodeNum}(1) * norm(Ip1Pos - nodePos));
+     force = force + normIm1 * (-2 * cellInfoRef.k_be * (tan(angleI/2) - tan(angleIm1/2))) / (cellInfoRef.refLengths{nodeNum}(end) * norm(nodePos - Im1Pos));
+     force = force - normI * (-2 * cellInfoRef.k_be * (tan(angleIp1/2) - tan(angleI/2))) / (cellInfoRef.refLengths{nodeNum}(1) * norm(Ip1Pos - nodePos));
      
   end
   

@@ -17,6 +17,7 @@ function cellInfoNew = findSteadyState(cellInfo)
   
   cellInfoNew = calculateNodeInfo(cellInfoNew);
   
+  % display force <x, y> at each node
   forceValues
 end 
 
