@@ -31,6 +31,9 @@ function cellInfoNew = deformCellDisplacement(cellInfo, nodeNums, positionChange
 %   cellInfoNew.isFixed(nodeNums) = false;
   
 %   cellInfoNew.isFixed([1,2,3, 9,10]) = true;
-  cellInfoNew.isFixed([8,9]) = true;
+  cellInfoNew.isFixed([6]) = true;
 end
+
+% c_def = deformCellDisplacement(c, [1,4], [0, 3; 3 -3;]);
+% c_def = deformCellDisplacement(c, [1,4, 11], [0, 3; 3 -3; -2 -2]);
 

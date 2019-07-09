@@ -128,7 +128,7 @@ function [A,b] = velSystem(cellInfo)
         tensionX = - cellInfo.k_ti * (cellInfo.lengths{node}(j) / cellInfo.refLengths{node}(j) - 1) * cellInfo.txs{node}(j);
         b(i) = b(i) + tensionX;
         tensionY = - cellInfo.k_ti * (cellInfo.lengths{node}(j) / cellInfo.refLengths{node}(j) - 1) * cellInfo.tys{node}(j);
-        b(i+1) = b(i+1) + tensionY;
+        b(i+1) = b(i+1) + tensionY; % +
       end
       
     end
@@ -138,12 +138,12 @@ function [A,b] = velSystem(cellInfo)
      if node <= cellInfo.externalNodeCount
        shiftNodep1 = circshift(1:cellInfo.externalNodeCount, -1);
        shiftNodem1 = circshift(1:cellInfo.externalNodeCount, 1);
-       shearForceX = - (-2) * cellInfo.k_be * ( tan((cellInfo.alphs{node}(end)-pi)/2) - tan((cellInfo.alphs{shiftNodem1(node)}(end)-pi)/2) ) / ( cellInfo.refLengths{node}(1) * cellInfo.lengths{node}(1) ) * -cellInfo.nxs{node}(1)...
-                     - (-2) * cellInfo.k_be * ( tan((cellInfo.alphs{shiftNodep1(node)}(end)-pi)/2) - tan((cellInfo.alphs{node}(end)-pi)/2) ) / ( cellInfo.refLengths{node}(end) * cellInfo.lengths{node}(end) ) * -cellInfo.nxs{node}(end);
-       shearForceY = - (-2) * cellInfo.k_be * ( tan((cellInfo.alphs{node}(end)-pi)/2) - tan((cellInfo.alphs{shiftNodem1(node)}(end)-pi)/2) ) / ( cellInfo.refLengths{node}(1) * cellInfo.lengths{node}(1) ) * -cellInfo.nys{node}(1)...
-                     - (-2) * cellInfo.k_be * ( tan((cellInfo.alphs{shiftNodep1(node)}(end)-pi)/2) - tan((cellInfo.alphs{node}(end)-pi)/2) ) / ( cellInfo.refLengths{node}(end) * cellInfo.lengths{node}(end) ) * -cellInfo.nys{node}(end);
+       shearForceX = - (-2) * cellInfo.k_be * ( tan((cellInfo.alphs{node}(end)-pi)/2) - tan((cellInfo.alphs{shiftNodem1(node)}(end)-pi)/2) ) / ( cellInfo.refLengths{node}(end) * cellInfo.lengths{node}(end) ) * -cellInfo.nxs{node}(end)...
+                     - (-2) * cellInfo.k_be * ( tan((cellInfo.alphs{shiftNodep1(node)}(end)-pi)/2) - tan((cellInfo.alphs{node}(end)-pi)/2) ) / ( cellInfo.refLengths{node}(1) * cellInfo.lengths{node}(1) ) * -cellInfo.nxs{node}(1);
+       shearForceY = - (-2) * cellInfo.k_be * ( tan((cellInfo.alphs{node}(end)-pi)/2) - tan((cellInfo.alphs{shiftNodem1(node)}(end)-pi)/2) ) / ( cellInfo.refLengths{node}(end) * cellInfo.lengths{node}(end) ) * -cellInfo.nys{node}(end)...
+                     - (-2) * cellInfo.k_be * ( tan((cellInfo.alphs{shiftNodep1(node)}(end)-pi)/2) - tan((cellInfo.alphs{node}(end)-pi)/2) ) / ( cellInfo.refLengths{node}(1) * cellInfo.lengths{node}(1) ) * -cellInfo.nys{node}(1);
        b(i) = b(i) + shearForceX; %+ shearForceX; % also had - for both at one point
-       b(i+1) = b(i+1) - shearForceY; %+ shearForceY;
+       b(i+1) = b(i+1) + shearForceY; %+ shearForceY;
      end
   end
   

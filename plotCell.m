@@ -8,14 +8,14 @@ function plotCell(cellInfo)
        plot([cellInfo.xPosition(cellInfo.lineSegments(i, 1)), cellInfo.xPosition(cellInfo.lineSegments(i, 2))],... 
             [cellInfo.yPosition(cellInfo.lineSegments(i, 1)), cellInfo.yPosition(cellInfo.lineSegments(i, 2))],...
             'r');
-       axis([-12 12 -12 12]);
+       %axis([-12 12 -12 12]);
      else
        plot([cellInfo.xPosition(cellInfo.lineSegments(i, 1)), cellInfo.xPosition(cellInfo.lineSegments(i, 2))],... 
             [cellInfo.yPosition(cellInfo.lineSegments(i, 1)), cellInfo.yPosition(cellInfo.lineSegments(i, 2))],...
             'b');    
      end
      hold on
-     axis manual
+     %axis manual
   end
   
    if isfield(cellInfo, "modelType") && cellInfo.modelType == "timeStepper"
@@ -24,7 +24,7 @@ function plotCell(cellInfo)
               cellInfo.xVelocity(i), cellInfo.yVelocity(i),...
               0, 'k');
        hold on
-       axis manual
+       %axis manual
      end
    end
   

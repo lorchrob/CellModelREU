@@ -9,8 +9,8 @@ function cellInfo = initializeNetwork(externalNodeCount)
   % underscores represent subscripts
   cellInfo.k_te = 1; %1200
   cellInfo.k_ti = 1; %1200
-  cellInfo.mu_e = 5; %200
-  cellInfo.mu_i = 5; %100
+  cellInfo.mu_e = .1; %200
+  cellInfo.mu_i = .1; %100
   cellInfo.k_be = .1; %90
   cellInfo.k_bi = 0;
   

@@ -2,11 +2,14 @@
 Simple function to time step, using Euler's method. t_0 (initial time) is
 assumed to be 0).
 %}
-function cellInfoNew = stepEuler(cellInfo, dt, totalTime) 
+function [cellInfoNew, allPos] = stepEuler(cellInfo, dt, totalTime) 
   cellInfo.modelType = "timeStepper";
   cellInfoNew = cellInfo;
   tPlot = 0;
-  dtPlot = 0.1;
+  dtPlot = 0.001;
+  
+  allPos = zeros(cellInfoNew.totalNodeCount,2);
+  step = 1;
   
   for i = dt:dt:totalTime
 %     [A, b] = velSystem(cellInfoNew);
@@ -15,6 +18,9 @@ function cellInfoNew = stepEuler(cellInfo, dt, totalTime)
     pos(1:2:end) = cellInfoNew.xPosition;
     pos(2:2:end) = cellInfoNew.yPosition;
     vels = getVelocities(pos, cellInfoNew);
+    
+    allPos(:,:,step) = [cellInfoNew.xPosition, cellInfoNew.yPosition];
+    step = step + 1;
 
     % Euler equations
     cellInfoNew.xPosition = cellInfoNew.xPosition + vels(1:2:end)*dt;
@@ -27,7 +33,7 @@ function cellInfoNew = stepEuler(cellInfo, dt, totalTime)
     if i >= tPlot
       plotCell(cellInfoNew);
       drawnow;
-      fprintf("Time: %.1f\n", i);
+      fprintf("Time: %.3f\n", i);
       tPlot = tPlot + dtPlot;
     end
   end
