@@ -11,9 +11,8 @@ the right (x direction) and 4 down (y direction).
 NOTE: There must be exactly one pair of position changes (x, y) for each node num
 (i.e., numel(positionChanges) = 2 * numel(nodeNums)).
 
-NOTE: The displaced nodes will be fixed at their new position.
 %}
-function cellInfoNew = deformCellDisplacement(cellInfo, nodeNums, positionChanges)
+function cellInfoNew = deformCellDisplacement(cellInfo, nodeNums, fixedNodes, positionChanges)
   cellInfoNew = cellInfo;
 
   for i = 1 : numel(nodeNums)
@@ -26,14 +25,9 @@ function cellInfoNew = deformCellDisplacement(cellInfo, nodeNums, positionChange
     %cellInfoNew.isFixed(nodeNums(i)) = true; 
   end
   
-  % fixing for tests
-%   cellInfoNew.isFixed = ones(cellInfo.totalNodeCount, 1);
-%   cellInfoNew.isFixed(nodeNums) = false;
-  
-%   cellInfoNew.isFixed([1,2,3, 9,10]) = true;
-  cellInfoNew.isFixed([6]) = true;
+   cellInfoNew.isFixed = zeros(cellInfo.totalNodeCount, 1);
+   cellInfoNew.isFixed(fixedNodes) = true; 
 end
 
-% c_def = deformCellDisplacement(c, [1,4], [0, 3; 3 -3;]);
-% c_def = deformCellDisplacement(c, [1,4, 11], [0, 3; 3 -3; -2 -2]);
+
 

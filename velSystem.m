@@ -91,7 +91,7 @@ function [A,b] = velSystem(cellInfo)
     end
   end
   
-  % Setting elements for
+  % Setting elements for everything else in A
   for i = 1:2:matSize
     node = ceil(i/2);
     for j = 1:numel(cellInfo.nodesAdjacent{node})
