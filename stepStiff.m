@@ -1,9 +1,8 @@
 % Script to initialize a network, deform it, and call ode15s to solve the
 % velocity system. Also plots. 
-% NOTE: probably not the solver we'll be using
 %% Init
 c2 = initializeNetwork(10);
-c_def2 = deformCellDisplacement(c2, [4], [0,1]);
+c_def2 = deformCellDisplacement(c2, [4], [], [0,1]);
 
 
 %% Stepping

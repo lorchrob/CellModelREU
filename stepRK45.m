@@ -2,7 +2,7 @@
 % velocity system. Also plots.
 %% Init
 c = initializeNetwork(10);
-c_def = deformCellDisplacement(c, [4], [0, 1]);
+c_def = deformCellDisplacement(c, [4], [], [0, 1]);
 
 
 %% Stepping
