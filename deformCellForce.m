@@ -19,6 +19,6 @@ function cellInfoNew = deformCellForce(cellInfo, nodeNums, fixedNodes, externalF
     cellInfoNew.externalForces(nodeNums(i),:) = cellInfoNew.externalForces(nodeNums(i),:) + externalForces(i,:);
   end
   
-  cellInfoNew.isFixed = zeros(cellInfo.totalNodeCount, 1);
+  cellInfoNew.isFixed = false(cellInfo.totalNodeCount, 1);
   cellInfoNew.isFixed(fixedNodes) = true; 
 end

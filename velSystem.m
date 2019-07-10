@@ -40,7 +40,7 @@ function [A,b] = velSystem(cellInfo)
   end
   
   % Setting the subdiagonal and superdiagonal elements
-  for i = 2:matSize-1
+  for i = 2:2:matSize
     node = ceil(i/2);
     for j = 1:numel(cellInfo.nodesAdjacent{node})
       
@@ -146,6 +146,13 @@ function [A,b] = velSystem(cellInfo)
        b(i+1) = b(i+1) + shearForceY; %+ shearForceY;
      end
   end
+  
+    % prescibe external force
+  for node = 1:cellInfo.totalNodeCount
+    b(node*2-1) = -cellInfo.externalForces(node, 1);
+    b(node*2) = -cellInfo.externalForces(node, 2);
+  end
+  
   
   for i = 1:cellInfo.totalNodeCount
     if cellInfo.isFixed(i)

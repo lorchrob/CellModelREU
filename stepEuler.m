@@ -6,7 +6,7 @@ function [cellInfoNew, allPos] = stepEuler(cellInfo, dt, totalTime)
   cellInfo.modelType = "timeStepper";
   cellInfoNew = cellInfo;
   tPlot = 0;
-  dtPlot = 0.001;
+  dtPlot = 0.1;
   
   allPos = zeros(cellInfoNew.totalNodeCount,2);
   step = 1;
