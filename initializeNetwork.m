@@ -61,12 +61,10 @@ function cellInfo = setupInteriorNodes(cellInfo)
   %  but we just have one bounded region here
   setformulas = 'cell';
   [dl,bt] = decsg(boungeominfo,setformulas,nameofbound);
-  pdegplot(dl,'EdgeLabels','on','FaceLabels','on');
   model = createpde;
   geometryFromEdges(model, dl);
   generateMesh(model, 'Hmax', cellInfo.externalRefLength', 'Hmin', cellInfo.externalRefLength, 'Hgrad', 1,...
     'GeometricOrder', 'linear');
-  pdemesh(model);
     
   tol = 1e-12;
   [a,b] = ismembertol([cellInfo.xPosition, cellInfo.yPosition], model.Mesh.Nodes', tol, 'ByRows', true);
@@ -115,9 +113,6 @@ function cellInfo = setupInteriorNodes(cellInfo)
     
     cellInfo.nodesAdjacent{i} = inds;
   end
-            
-  warning(['Mesh not yet perfected (e.g. equidistant nodes, ',...
-    'equal connectivity, others?']);
 end
 
 
