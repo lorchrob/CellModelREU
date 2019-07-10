@@ -149,8 +149,8 @@ function [A,b] = velSystem(cellInfo)
   
     % prescibe external force
   for node = 1:cellInfo.totalNodeCount
-    b(node*2-1) = -cellInfo.externalForces(node, 1);
-    b(node*2) = -cellInfo.externalForces(node, 2);
+    b(node*2-1) = b(node*2-1) -cellInfo.externalForces(node, 1);
+    b(node*2) = b(node*2) -cellInfo.externalForces(node, 2);
   end
   
   
