@@ -10,56 +10,87 @@ function [A,b] = velSystem(cellInfo)
   % Setting the odd diagonal elements (u1, u2, u3,...)
   for i = 1:2:matSize
     node = ceil(i/2);
-    for j = 1:numel(cellInfo.nodesAdjacent{node})
-
+    
+    % creates a vector of line segments around node 
+    lineSegs = [repmat(node,1,numel(cellInfo.nodesAdjacent{node}));cellInfo.nodesAdjacent{node}]';
+    % Vector of booleans saying if each line segment (from above) are
+    %   external (1) or internal (0)
+    IorE = ismember(lineSegs, cellInfo.externalLineSegments, 'rows') + ismember(flip(lineSegs,2), cellInfo.externalLineSegments, 'rows');
+    A(i,i) = A(i,i) - sum( ( cellInfo.mu_e * IorE + cellInfo.mu_i * ~IorE ) ./ cellInfo.lengths{node} .* cellInfo.txs{node}.^2 );
+    
+    
+%     for j = 1:numel(cellInfo.nodesAdjacent{node})
       % Using mu_external if external element
-      if cellInfo.nodesAdjacent{node}(j) <= cellInfo.externalNodeCount & node <= cellInfo.externalNodeCount
-        A(i,i) = A(i,i) - cellInfo.mu_e / cellInfo.lengths{node}(j) * cellInfo.txs{node}(j) ^ 2;  
-      % Using mu_internal if internal element
-      else
-        A(i,i) = A(i,i) - cellInfo.mu_i / cellInfo.lengths{node}(j) * cellInfo.txs{node}(j) ^ 2;
-      end
+%       if cellInfo.nodesAdjacent{node}(j) <= cellInfo.externalNodeCount & node <= cellInfo.externalNodeCount
+%         A(i,i) = A(i,i) - cellInfo.mu_e / cellInfo.lengths{node}(j) * cellInfo.txs{node}(j) ^ 2;  
+%       % Using mu_internal if internal element
+%       else
+%         A(i,i) = A(i,i) - cellInfo.mu_i / cellInfo.lengths{node}(j) * cellInfo.txs{node}(j) ^ 2;
+%       end
+%        IorE = sum( (cellInfo.externalLineSegments(:,1) == node & cellInfo.externalLineSegments(:,2) == cellInfo.nodesAdjacent{node}(j)) | ((cellInfo.externalLineSegments(:,1) == cellInfo.nodesAdjacent{node}(j) & cellInfo.externalLineSegments(:,2) == node)) );
+%        A(i,i) = A(i,i) - (cellInfo.mu_e * IorE + cellInfo.mu_i * ~IorE) / cellInfo.lengths{node}(j) * cellInfo.txs{node}(j)^2;
+%     end
 
-    end
+%   index = 1:2*(matSize+1):matSize^2; % index of odd diagonal elements
+%   [I,J] = ind2sub([matSize, matSize], index); % i,j indexes of odd diagonal elements
+%    IorE = ismember(cellInfo.externalLineSegments, [
+%   A(index) = A(index) - ( ) ./ cellInfo.lengths{ ceil(I/2) } .* cellInfo.txs{ ceil(I/2) } ^ 2 
+    
   end
+  
   
   % Setting the even diagonal elements (v1, v2, v3,...)
   for i = 2:2:matSize
     node = ceil(i/2);
-    for j = 1:numel(cellInfo.nodesAdjacent{node})
+    
+    lineSegs = [repmat(node,1,numel(cellInfo.nodesAdjacent{node}));cellInfo.nodesAdjacent{node}]';
+    IorE = ismember(lineSegs, cellInfo.externalLineSegments, 'rows') + ismember(flip(lineSegs,2), cellInfo.externalLineSegments, 'rows');
+    A(i,i) = A(i,i) - sum( ( cellInfo.mu_e * IorE + cellInfo.mu_i * ~IorE ) ./ cellInfo.lengths{node} .* cellInfo.tys{node}.^2 );
+ 
+    
+%     for j = 1:numel(cellInfo.nodesAdjacent{node})
+% 
+%       % Using mu_external if external element
+%       if cellInfo.nodesAdjacent{node}(j) <= cellInfo.externalNodeCount & node <= cellInfo.externalNodeCount
+%         A(i,i) = A(i,i) - cellInfo.mu_e / cellInfo.lengths{node}(j) * cellInfo.tys{node}(j) ^ 2;  
+%       % Using mu_internal if internal element
+%       else
+%         A(i,i) = A(i,i) - cellInfo.mu_i / cellInfo.lengths{node}(j) * cellInfo.tys{node}(j) ^ 2;
+%       end
+% 
+%     end
 
-      % Using mu_external if external element
-      if cellInfo.nodesAdjacent{node}(j) <= cellInfo.externalNodeCount & node <= cellInfo.externalNodeCount
-        A(i,i) = A(i,i) - cellInfo.mu_e / cellInfo.lengths{node}(j) * cellInfo.tys{node}(j) ^ 2;  
-      % Using mu_internal if internal element
-      else
-        A(i,i) = A(i,i) - cellInfo.mu_i / cellInfo.lengths{node}(j) * cellInfo.tys{node}(j) ^ 2;
-      end
-
-    end
   end
   
   % Setting the subdiagonal and superdiagonal elements
   for i = 2:2:matSize
     node = ceil(i/2);
-    for j = 1:numel(cellInfo.nodesAdjacent{node})
-      
-      % Using mu_external if external element
-      if cellInfo.nodesAdjacent{node}(j) <= cellInfo.externalNodeCount & node <= cellInfo.externalNodeCount
-        A(i,i-1) = A(i,i-1) - cellInfo.mu_e / cellInfo.lengths{node}(j) * cellInfo.tys{node}(j) * cellInfo.txs{node}(j);
-        A(i-1,i) = A(i,i-1); % sub and super diagonals are equal
-      % Using mu_internal if internal element
-      else
-        A(i,i-1) = A(i,i-1) - cellInfo.mu_i / cellInfo.lengths{node}(j) * cellInfo.tys{node}(j) * cellInfo.txs{node}(j);
-        A(i-1,i) = A(i,i-1); % sub and super diagonals are equal
-      end
-     
-    end
+    
+    lineSegs = [repmat(node,1,numel(cellInfo.nodesAdjacent{node}));cellInfo.nodesAdjacent{node}]';
+    IorE = ismember(lineSegs, cellInfo.externalLineSegments, 'rows') + ismember(flip(lineSegs,2), cellInfo.externalLineSegments, 'rows');
+    A(i, i-1) = A(i, i-1) - sum(( cellInfo.mu_e * IorE + cellInfo.mu_i * ~IorE ) ./ cellInfo.lengths{node} .* cellInfo.tys{node} .* cellInfo.txs{node} );
+    A(i-1, i) = A(i, i-1);
+    
+%     for j = 1:numel(cellInfo.nodesAdjacent{node})
+%       
+%       % Using mu_external if external element
+%       if cellInfo.nodesAdjacent{node}(j) <= cellInfo.externalNodeCount & node <= cellInfo.externalNodeCount
+%         A(i,i-1) = A(i,i-1) - cellInfo.mu_e / cellInfo.lengths{node}(j) * cellInfo.tys{node}(j) * cellInfo.txs{node}(j);
+%         A(i-1,i) = A(i,i-1); % sub and super diagonals are equal
+%       % Using mu_internal if internal element
+%       else
+%         A(i,i-1) = A(i,i-1) - cellInfo.mu_i / cellInfo.lengths{node}(j) * cellInfo.tys{node}(j) * cellInfo.txs{node}(j);
+%         A(i-1,i) = A(i,i-1); % sub and super diagonals are equal
+%       end
+%      
+%     end
   end
   
   % Setting elements for odd rows and odd columns
   for i = 1:2:matSize
     node = ceil(i/2);
+    
+    
     for j = 1:numel(cellInfo.nodesAdjacent{node}) % looping through all connected elements
       adjacentNode = cellInfo.nodesAdjacent{node}(j);
       
@@ -173,11 +204,12 @@ end
 
 function [forceX, forceY] = calculateWallForce(cellInfo, nodeNum)
   forceX = 0;
-  if cellInfo.yPosition(nodeNum) > cellInfo.yWall
-    forceY = (cellInfo.yPosition(nodeNum) - cellInfo.yWall)*-1000;
-  elseif cellInfo.yPosition(nodeNum) < -1 * cellInfo.yWall
-    forceY = (cellInfo.yPosition(nodeNum) + cellInfo.yWall)*-1000;
-  else
-    forceY = 0;
-  end
+  forceY = 0;
+%   if cellInfo.yPosition(nodeNum) > cellInfo.yWall
+%     forceY = (cellInfo.yPosition(nodeNum) - cellInfo.yWall)*-1000;
+%   elseif cellInfo.yPosition(nodeNum) < -1 * cellInfo.yWall
+%     forceY = (cellInfo.yPosition(nodeNum) + cellInfo.yWall)*-1000;
+%   else
+%     forceY = 0;
+%   end
 end
