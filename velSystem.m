@@ -6,18 +6,23 @@ function [A,b] = velSystem(cellInfo)
   matSize = cellInfo.totalNodeCount * 2;
   A = zeros(matSize);
   b = zeros(matSize, 1);
+  extLineSegs = cellInfo.externalLineSegments; % all the external line segments
+  
   
   % Setting the odd diagonal elements (u1, u2, u3,...)
   for i = 1:2:matSize
     node = ceil(i/2);
+    adjNodes = cellInfo.nodesAdjacent{node};
     
     % creates a vector of line segments around node 
-    lineSegs = [repmat(node,1,numel(cellInfo.nodesAdjacent{node}));cellInfo.nodesAdjacent{node}]';
+    lineSegs = [ repmat( node,1,numel(adjNodes) ) ; adjNodes]';
+    
     % Vector of booleans saying if each line segment (from above) are
     %   external (1) or internal (0)
-    IorE = ismember(lineSegs, cellInfo.externalLineSegments, 'rows') + ismember(flip(lineSegs,2), cellInfo.externalLineSegments, 'rows');
-    A(i,i) = A(i,i) - sum( ( cellInfo.mu_e * IorE + cellInfo.mu_i * ~IorE ) ./ cellInfo.lengths{node} .* cellInfo.txs{node}.^2 );
+    IorE = ismember(lineSegs, extLineSegs, 'rows') + ismember(flip(lineSegs,2), extLineSegs, 'rows');
     
+    A(i,i) = A(i,i) - sum( ( cellInfo.mu_e * IorE + cellInfo.mu_i * ~IorE ) ./ cellInfo.lengths{node} .* cellInfo.txs{node}.^2 );
+
     
 %     for j = 1:numel(cellInfo.nodesAdjacent{node})
       % Using mu_external if external element
@@ -27,8 +32,6 @@ function [A,b] = velSystem(cellInfo)
 %       else
 %         A(i,i) = A(i,i) - cellInfo.mu_i / cellInfo.lengths{node}(j) * cellInfo.txs{node}(j) ^ 2;
 %       end
-%        IorE = sum( (cellInfo.externalLineSegments(:,1) == node & cellInfo.externalLineSegments(:,2) == cellInfo.nodesAdjacent{node}(j)) | ((cellInfo.externalLineSegments(:,1) == cellInfo.nodesAdjacent{node}(j) & cellInfo.externalLineSegments(:,2) == node)) );
-%        A(i,i) = A(i,i) - (cellInfo.mu_e * IorE + cellInfo.mu_i * ~IorE) / cellInfo.lengths{node}(j) * cellInfo.txs{node}(j)^2;
 %     end
 
 %   index = 1:2*(matSize+1):matSize^2; % index of odd diagonal elements
@@ -42,9 +45,10 @@ function [A,b] = velSystem(cellInfo)
   % Setting the even diagonal elements (v1, v2, v3,...)
   for i = 2:2:matSize
     node = ceil(i/2);
+    adjNodes = cellInfo.nodesAdjacent{node};
     
-    lineSegs = [repmat(node,1,numel(cellInfo.nodesAdjacent{node}));cellInfo.nodesAdjacent{node}]';
-    IorE = ismember(lineSegs, cellInfo.externalLineSegments, 'rows') + ismember(flip(lineSegs,2), cellInfo.externalLineSegments, 'rows');
+    lineSegs = [ repmat(node,1,numel(adjNodes)) ; adjNodes ]';
+    IorE = ismember(lineSegs, extLineSegs, 'rows') + ismember(flip(lineSegs,2), extLineSegs, 'rows');
     A(i,i) = A(i,i) - sum( ( cellInfo.mu_e * IorE + cellInfo.mu_i * ~IorE ) ./ cellInfo.lengths{node} .* cellInfo.tys{node}.^2 );
  
     
@@ -65,9 +69,10 @@ function [A,b] = velSystem(cellInfo)
   % Setting the subdiagonal and superdiagonal elements
   for i = 2:2:matSize
     node = ceil(i/2);
+    adjNodes = cellInfo.nodesAdjacent{node};
     
-    lineSegs = [repmat(node,1,numel(cellInfo.nodesAdjacent{node}));cellInfo.nodesAdjacent{node}]';
-    IorE = ismember(lineSegs, cellInfo.externalLineSegments, 'rows') + ismember(flip(lineSegs,2), cellInfo.externalLineSegments, 'rows');
+    lineSegs = [ repmat(node,1,numel(adjNodes)) ; adjNodes ]';
+    IorE = ismember(lineSegs, extLineSegs, 'rows') + ismember(flip(lineSegs,2), extLineSegs, 'rows');
     A(i, i-1) = A(i, i-1) - sum(( cellInfo.mu_e * IorE + cellInfo.mu_i * ~IorE ) ./ cellInfo.lengths{node} .* cellInfo.tys{node} .* cellInfo.txs{node} );
     A(i-1, i) = A(i, i-1);
     
@@ -89,54 +94,72 @@ function [A,b] = velSystem(cellInfo)
   % Setting elements for odd rows and odd columns
   for i = 1:2:matSize
     node = ceil(i/2);
+    adjNodes = cellInfo.nodesAdjacent{node};
     
+    lineSegs = [repmat(node,1,numel(adjNodes)) ; adjNodes]';
+    IorE = ismember(lineSegs, extLineSegs, 'rows') + ismember(flip(lineSegs,2), extLineSegs, 'rows');
+    A(i, adjNodes*2-1) = A(i, adjNodes*2-1) + (( cellInfo.mu_e * IorE + cellInfo.mu_i * ~IorE ) ./ cellInfo.lengths{node} .* cellInfo.txs{node} .^ 2)';
     
-    for j = 1:numel(cellInfo.nodesAdjacent{node}) % looping through all connected elements
-      adjacentNode = cellInfo.nodesAdjacent{node}(j);
-      
-      % Using mu_external if external element
-      if cellInfo.nodesAdjacent{node}(j) <= cellInfo.externalNodeCount & node <= cellInfo.externalNodeCount
-        A(i,adjacentNode*2-1) = A(i,adjacentNode*2-1) + cellInfo.mu_e / cellInfo.lengths{node}(j) * cellInfo.txs{node}(j)^2;
-      % Using mu_internal if internal element
-      else
-        A(i,adjacentNode*2-1) = A(i,adjacentNode*2-1) + cellInfo.mu_i / cellInfo.lengths{node}(j) * cellInfo.txs{node}(j)^2;
-      end
-      
-    end
+%     for j = 1:numel(cellInfo.nodesAdjacent{node}) % looping through all connected elements
+%       adjacentNode = cellInfo.nodesAdjacent{node}(j);
+%       
+%       % Using mu_external if external element
+%       if cellInfo.nodesAdjacent{node}(j) <= cellInfo.externalNodeCount & node <= cellInfo.externalNodeCount
+%         A(i,adjacentNode*2-1) = A(i,adjacentNode*2-1) + cellInfo.mu_e / cellInfo.lengths{node}(j) * cellInfo.txs{node}(j)^2;
+%       % Using mu_internal if internal element
+%       else
+%         A(i,adjacentNode*2-1) = A(i,adjacentNode*2-1) + cellInfo.mu_i / cellInfo.lengths{node}(j) * cellInfo.txs{node}(j)^2;
+%       end
+%     end
+    
   end
   
   % Setting elements for even rows and even columns
   for i = 2:2:matSize
     node = ceil(i/2);
-    for j = 1:numel(cellInfo.nodesAdjacent{node}) % looping through all connected elements
-      adjacentNode = cellInfo.nodesAdjacent{node}(j);
-      
-      % Using mu_external if external element
-      if cellInfo.nodesAdjacent{node}(j) <= cellInfo.externalNodeCount & node <= cellInfo.externalNodeCount
-        A(i,adjacentNode*2) = A(i,adjacentNode*2) + cellInfo.mu_e / cellInfo.lengths{node}(j) * cellInfo.tys{node}(j)^2;
-      % Using mu_internal if internal element
-      else
-        A(i,adjacentNode*2) = A(i,adjacentNode*2) + cellInfo.mu_i / cellInfo.lengths{node}(j) * cellInfo.tys{node}(j)^2;
-      end
-      
-    end
+    adjNodes = cellInfo.nodesAdjacent{node};
+    
+    lineSegs = [repmat(node,1,numel(adjNodes)) ; adjNodes]';
+    IorE = ismember(lineSegs, extLineSegs, 'rows') + ismember(flip(lineSegs,2), extLineSegs, 'rows');
+    A(i, adjNodes*2) = A(i, adjNodes*2) + (( cellInfo.mu_e * IorE + cellInfo.mu_i * ~IorE ) ./ cellInfo.lengths{node} .* cellInfo.tys{node} .^ 2)';
+
+
+%     for j = 1:numel(cellInfo.nodesAdjacent{node}) % looping through all connected elements
+%       adjacentNode = cellInfo.nodesAdjacent{node}(j);
+%       
+%       % Using mu_external if external element
+%       if cellInfo.nodesAdjacent{node}(j) <= cellInfo.externalNodeCount & node <= cellInfo.externalNodeCount
+%         A(i,adjacentNode*2) = A(i,adjacentNode*2) + cellInfo.mu_e / cellInfo.lengths{node}(j) * cellInfo.tys{node}(j)^2;
+%       % Using mu_internal if internal element
+%       else
+%         A(i,adjacentNode*2) = A(i,adjacentNode*2) + cellInfo.mu_i / cellInfo.lengths{node}(j) * cellInfo.tys{node}(j)^2;
+%       end
+%     end
+    
   end
   
   % Setting elements for everything else in A
   for i = 1:2:matSize
     node = ceil(i/2);
-    for j = 1:numel(cellInfo.nodesAdjacent{node})
-      adjacentNode = cellInfo.nodesAdjacent{node}(j);
-      
-      if cellInfo.nodesAdjacent{node}(j) <= cellInfo.externalNodeCount & node <= cellInfo.externalNodeCount
-        A(i+1, adjacentNode*2-1) = A(i+1, adjacentNode*2-1) + cellInfo.mu_e / cellInfo.lengths{node}(j) * cellInfo.txs{node}(j) * cellInfo.tys{node}(j);
-        A(i, adjacentNode*2) = A(i+1, adjacentNode*2-1);
-      else
-        A(i+1, adjacentNode*2-1) = A(i+1, adjacentNode*2-1) + cellInfo.mu_i / cellInfo.lengths{node}(j) * cellInfo.txs{node}(j) * cellInfo.tys{node}(j);
-        A(i, adjacentNode*2) = A(i+1, adjacentNode*2-1);
-      end
-      
-    end
+    adjNodes = cellInfo.nodesAdjacent{node};
+    
+    lineSegs = [repmat(node,1,numel(adjNodes)) ; adjNodes]';
+    IorE = ismember(lineSegs, extLineSegs, 'rows') + ismember(flip(lineSegs,2), extLineSegs, 'rows');
+    A(i+1, adjNodes*2-1) = A(i+1, adjNodes*2-1) + (( cellInfo.mu_e * IorE + cellInfo.mu_i * ~IorE ) ./ cellInfo.lengths{node} .* cellInfo.txs{node} .* cellInfo.tys{node})';
+    A(i, adjNodes*2) = A(i+1, adjNodes*2-1);
+    
+%     for j = 1:numel(cellInfo.nodesAdjacent{node})
+%       adjacentNode = cellInfo.nodesAdjacent{node}(j);
+%       
+%       if cellInfo.nodesAdjacent{node}(j) <= cellInfo.externalNodeCount & node <= cellInfo.externalNodeCount
+%         A(i+1, adjacentNode*2-1) = A(i+1, adjacentNode*2-1) + cellInfo.mu_e / cellInfo.lengths{node}(j) * cellInfo.txs{node}(j) * cellInfo.tys{node}(j);
+%         A(i, adjacentNode*2) = A(i+1, adjacentNode*2-1);
+%       else
+%         A(i+1, adjacentNode*2-1) = A(i+1, adjacentNode*2-1) + cellInfo.mu_i / cellInfo.lengths{node}(j) * cellInfo.txs{node}(j) * cellInfo.tys{node}(j);
+%         A(i, adjacentNode*2) = A(i+1, adjacentNode*2-1);
+%       end
+%     end
+
   end
   
 %   cellInfo.shears = zeros(cellInfo.externalNodeCount, 2);
@@ -145,24 +168,34 @@ function [A,b] = velSystem(cellInfo)
   % Setting b vector.
   for i = 1:2:matSize
     node = ceil(i/2);
-    for j = 1:numel(cellInfo.nodesAdjacent{node})
-      
-      if cellInfo.nodesAdjacent{node}(j) <= cellInfo.externalNodeCount & node <= cellInfo.externalNodeCount
-        tensionX = - cellInfo.k_te * (cellInfo.lengths{node}(j) / cellInfo.refLengths{node}(j) - 1) * cellInfo.txs{node}(j);
-        b(i) = b(i) + tensionX;
-        tensionY = - cellInfo.k_te * (cellInfo.lengths{node}(j) / cellInfo.refLengths{node}(j) - 1) * cellInfo.tys{node}(j);
-        b(i+1) = b(i+1) + tensionY;
-        
-%         cellInfo.tensions{node}(j) = [tensionX, tensionY];
-        
-      else
-        tensionX = - cellInfo.k_ti * (cellInfo.lengths{node}(j) / cellInfo.refLengths{node}(j) - 1) * cellInfo.txs{node}(j);
-        b(i) = b(i) + tensionX;
-        tensionY = - cellInfo.k_ti * (cellInfo.lengths{node}(j) / cellInfo.refLengths{node}(j) - 1) * cellInfo.tys{node}(j);
-        b(i+1) = b(i+1) + tensionY; % +
-      end
-      
-    end
+    adjNodes = cellInfo.nodesAdjacent{node};
+    
+    lineSegs = [repmat(node,1,numel(adjNodes)) ; adjNodes]';
+    IorE = ismember(lineSegs, extLineSegs, 'rows') + ismember(flip(lineSegs,2), extLineSegs, 'rows');
+    
+    tensionX = - sum(( cellInfo.k_te * IorE + cellInfo.k_ti * ~IorE ) .* (cellInfo.lengths{node} ./ cellInfo.refLengths{node} - 1) .* cellInfo.txs{node});
+    tensionY = - sum(( cellInfo.k_te * IorE + cellInfo.k_ti * ~IorE ) .* (cellInfo.lengths{node} ./ cellInfo.refLengths{node} - 1) .* cellInfo.tys{node});
+    
+    b(i) = b(i) + tensionX;
+    b(i+1) = b(i+1) + tensionY;
+    
+%     for j = 1:numel(cellInfo.nodesAdjacent{node})
+%       
+%       if cellInfo.nodesAdjacent{node}(j) <= cellInfo.externalNodeCount & node <= cellInfo.externalNodeCount
+%         tensionX = - cellInfo.k_te * (cellInfo.lengths{node}(j) / cellInfo.refLengths{node}(j) - 1) * cellInfo.txs{node}(j);
+%         b(i) = b(i) + tensionX;
+%         tensionY = - cellInfo.k_te * (cellInfo.lengths{node}(j) / cellInfo.refLengths{node}(j) - 1) * cellInfo.tys{node}(j);
+%         b(i+1) = b(i+1) + tensionY;
+%         
+% %         cellInfo.tensions{node}(j) = [tensionX, tensionY];
+%         
+%       else
+%         tensionX = - cellInfo.k_ti * (cellInfo.lengths{node}(j) / cellInfo.refLengths{node}(j) - 1) * cellInfo.txs{node}(j);
+%         b(i) = b(i) + tensionX;
+%         tensionY = - cellInfo.k_ti * (cellInfo.lengths{node}(j) / cellInfo.refLengths{node}(j) - 1) * cellInfo.tys{node}(j);
+%         b(i+1) = b(i+1) + tensionY; % +
+%       end
+%     end
     
     %shearing forces
     
