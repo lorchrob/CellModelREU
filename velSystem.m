@@ -147,10 +147,11 @@ function [A,b] = velSystem(cellInfo)
      end
   end
   
-    % prescibe external force
+  % prescibe external force
   for node = 1:cellInfo.totalNodeCount
-    b(node*2-1) = b(node*2-1) -cellInfo.externalForces(node, 1);
-    b(node*2) = b(node*2) -cellInfo.externalForces(node, 2);
+    [wallForceX, wallForceY] = calculateWallForce(cellInfo, node);
+    b(node*2-1) = b(node*2-1) - cellInfo.externalForces(node, 1) - wallForceX;
+    b(node*2) = b(node*2) - cellInfo.externalForces(node, 2) - wallForceY;
   end
   
   
@@ -168,4 +169,15 @@ function [A,b] = velSystem(cellInfo)
     end
   end
   
+end
+
+function [forceX, forceY] = calculateWallForce(cellInfo, nodeNum)
+  forceX = 0;
+  if cellInfo.yPosition(nodeNum) > cellInfo.yWall
+    forceY = (cellInfo.yPosition(nodeNum) - cellInfo.yWall)*-1000;
+  elseif cellInfo.yPosition(nodeNum) < -1 * cellInfo.yWall
+    forceY = (cellInfo.yPosition(nodeNum) + cellInfo.yWall)*-1000;
+  else
+    forceY = 0;
+  end
 end

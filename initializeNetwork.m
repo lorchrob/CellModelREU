@@ -1,7 +1,13 @@
 %{
 Main function to initialize the system
 %}
-function cellInfo = initializeNetwork(externalNodeCount)  
+function cellInfo = initializeNetwork(externalNodeCount, simulationType)  
+  if strcmp(simulationType, 'wall') 
+    cellInfo.yWall = 4;
+  else
+    cellInfo.yWall = Inf;
+  end
+
   % set initial values for some fields of the 'cellInfo' struct
   cellInfo.externalNodeCount = externalNodeCount;
   cellInfo.radius = 12.4/2; 
