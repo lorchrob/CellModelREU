@@ -13,12 +13,8 @@ function allForces = calcAllForces(positions, cellInfo)
   end
   
   for i = 1 : numel(positions(:,1))
-    % set forces of fixed nodes to 0
-    if cellInfo.isFixed(i)
-      allForces(i,:) = [0 0];
-    % otherwise, calculate force using our equation
-    else
-      allForces(i,:) = calculateForce(positions, i, cellInfo);
-    end
+   if ~cellInfo.isFixed(i)
+     allForces(i,:) = calculateForce(positions, i, cellInfo); 
+   end
   end
 end
