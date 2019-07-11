@@ -2,7 +2,7 @@
 Main function to initialize the system
 %}
 function cellInfo = initializeNetwork(externalNodeCount, simulationType)  
-  if strcmp(simulationType, 'wall') 
+  if exist('simulationType', 'var') && strcmp(simulationType, 'wall') 
     cellInfo.yWall = 4;
   else
     cellInfo.yWall = Inf;
