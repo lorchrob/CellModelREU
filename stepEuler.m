@@ -33,7 +33,7 @@ function cellInfoNew = stepEuler(cellInfo, dt, totalTime, dtPlot)
     cellInfoNew.yVelocity = vels(2:2:end);
     cellInfoNew = calculateNodeInfo(cellInfoNew);
     
-    if norm(vels(1:2:end)) < 0.05 & norm(vels(2:2:end)) < 0.05
+    if norm(vels(1:2:end)) < 0.09 & norm(vels(2:2:end)) < 0.09
       break
     end
     
