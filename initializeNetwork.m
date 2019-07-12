@@ -3,9 +3,11 @@ Main function to initialize the system
 %}
 function cellInfo = initializeNetwork(externalNodeCount, simulationType)  
   if exist('simulationType', 'var') && strcmp(simulationType, 'wall') 
-    cellInfo.yWall = 4;
+    cellInfo.xw =   [-190, -150,  150, 150, 190, 190, 150, 150, -150, -190];
+    cellInfo.yw = 2*[ -15, -2.5, -2.5, -15, -15,  15,  15, 2.5,  2.5,   15];
   else
-    cellInfo.yWall = Inf;
+    cellInfo.xw = [-500,  500, 500, -500]; % defaults to a square with length 1000
+    cellInfo.yw = [-500, -500, 500,  500];
   end
 
   % set initial values for some fields of the 'cellInfo' struct
@@ -52,7 +54,9 @@ function cellInfo = initializeNetwork(externalNodeCount, simulationType)
   % For now, we say that no nodes are fixed and there are no external
   % forces (may be updated later)
   cellInfo.isFixed = false(cellInfo.totalNodeCount, 1);
-  cellInfo.externalForces = zeros(cellInfo.totalNodeCount, 2); 
+  cellInfo.externalForces = zeros(cellInfo.totalNodeCount, 2);
+  cellInfo.xwf = zeros(cellInfo.totalNodeCount,1);
+  cellInfo.ywf = cellInfo.xwf;
 end
 
 %{

@@ -9,8 +9,8 @@ function [A,b] = velSystem(cellInfo)
   extLineSegs = cellInfo.externalLineSegments; % all the external line segments
   
   
-  % Setting the odd diagonal elements (u1, u2, u3,...)
-  for i = 1:2:matSize
+  % Setting the diagonal elements (u1, v1, u2, v2, u3, v3, ...)
+  for i = 1:matSize
     node = ceil(i/2);
     adjNodes = cellInfo.nodesAdjacent{node};
     
@@ -20,20 +20,28 @@ function [A,b] = velSystem(cellInfo)
     % Vector of booleans saying if each line segment (from above) are
     %   external (1) or internal (0)
     IorE = ismember(lineSegs, extLineSegs, 'rows') + ismember(flip(lineSegs,2), extLineSegs, 'rows');
-    
-    A(i,i) = A(i,i) - sum( ( cellInfo.mu_e * IorE + cellInfo.mu_i * ~IorE ) ./ cellInfo.lengths{node} .* cellInfo.txs{node}.^2 );
 
+    XorY = mod(i,2) == 1; % true if 'i' is odd. false if even.
     
-%     for j = 1:numel(cellInfo.nodesAdjacent{node})
+    A(i,i) = A(i,i) - sum( ( cellInfo.mu_e * IorE + cellInfo.mu_i * ~IorE ) ./ cellInfo.lengths{node} .* (cellInfo.txs{node}.^2 * XorY + cellInfo.tys{node}.^2 * ~XorY) );
+
+    % code above is vectorized version of this loop (without 'j' loop)
+%{ 
+    % Old un-vectorized version
+    for j = 1:numel(cellInfo.nodesAdjacent{node})
       % Using mu_external if external element
-%       if cellInfo.nodesAdjacent{node}(j) <= cellInfo.externalNodeCount & node <= cellInfo.externalNodeCount
-%         A(i,i) = A(i,i) - cellInfo.mu_e / cellInfo.lengths{node}(j) * cellInfo.txs{node}(j) ^ 2;  
-%       % Using mu_internal if internal element
-%       else
-%         A(i,i) = A(i,i) - cellInfo.mu_i / cellInfo.lengths{node}(j) * cellInfo.txs{node}(j) ^ 2;
-%       end
-%     end
-
+      if cellInfo.nodesAdjacent{node}(j) <= cellInfo.externalNodeCount & node <= cellInfo.externalNodeCount
+        A(i,i) = A(i,i) - cellInfo.mu_e / cellInfo.lengths{node}(j) * cellInfo.txs{node}(j) ^ 2;  
+      % Using mu_internal if internal element
+      else
+        A(i,i) = A(i,i) - cellInfo.mu_i / cellInfo.lengths{node}(j) * cellInfo.txs{node}(j) ^ 2;
+      end
+    end
+%}
+    
+    % experimenting with trying to vectorize 'i' loops. Probably impossible
+    %   to do since cellInfo is a cell and you can't do vector stuff with
+    %   cells.
 %   index = 1:2*(matSize+1):matSize^2; % index of odd diagonal elements
 %   [I,J] = ind2sub([matSize, matSize], index); % i,j indexes of odd diagonal elements
 %    IorE = ismember(cellInfo.externalLineSegments, [
@@ -41,32 +49,9 @@ function [A,b] = velSystem(cellInfo)
     
   end
   
-  
-  % Setting the even diagonal elements (v1, v2, v3,...)
-  for i = 2:2:matSize
-    node = ceil(i/2);
-    adjNodes = cellInfo.nodesAdjacent{node};
-    
-    lineSegs = [ repmat(node,1,numel(adjNodes)) ; adjNodes ]';
-    IorE = ismember(lineSegs, extLineSegs, 'rows') + ismember(flip(lineSegs,2), extLineSegs, 'rows');
-    A(i,i) = A(i,i) - sum( ( cellInfo.mu_e * IorE + cellInfo.mu_i * ~IorE ) ./ cellInfo.lengths{node} .* cellInfo.tys{node}.^2 );
- 
-    
-%     for j = 1:numel(cellInfo.nodesAdjacent{node})
-% 
-%       % Using mu_external if external element
-%       if cellInfo.nodesAdjacent{node}(j) <= cellInfo.externalNodeCount & node <= cellInfo.externalNodeCount
-%         A(i,i) = A(i,i) - cellInfo.mu_e / cellInfo.lengths{node}(j) * cellInfo.tys{node}(j) ^ 2;  
-%       % Using mu_internal if internal element
-%       else
-%         A(i,i) = A(i,i) - cellInfo.mu_i / cellInfo.lengths{node}(j) * cellInfo.tys{node}(j) ^ 2;
-%       end
-% 
-%     end
 
-  end
   
-  % Setting the subdiagonal and superdiagonal elements
+  % Setting (some of) the subdiagonal and superdiagonal elements
   for i = 2:2:matSize
     node = ceil(i/2);
     adjNodes = cellInfo.nodesAdjacent{node};
@@ -75,7 +60,9 @@ function [A,b] = velSystem(cellInfo)
     IorE = ismember(lineSegs, extLineSegs, 'rows') + ismember(flip(lineSegs,2), extLineSegs, 'rows');
     A(i, i-1) = A(i, i-1) - sum(( cellInfo.mu_e * IorE + cellInfo.mu_i * ~IorE ) ./ cellInfo.lengths{node} .* cellInfo.tys{node} .* cellInfo.txs{node} );
     A(i-1, i) = A(i, i-1);
-    
+
+    % code above is vectorized version of this loop (without 'j' loop)
+%{
 %     for j = 1:numel(cellInfo.nodesAdjacent{node})
 %       
 %       % Using mu_external if external element
@@ -89,17 +76,22 @@ function [A,b] = velSystem(cellInfo)
 %       end
 %      
 %     end
+%}
   end
   
-  % Setting elements for odd rows and odd columns
+  % Setting elements for (odd rows and odd columns) and (even rows and even columns) 
   for i = 1:2:matSize
     node = ceil(i/2);
     adjNodes = cellInfo.nodesAdjacent{node};
     
     lineSegs = [repmat(node,1,numel(adjNodes)) ; adjNodes]';
     IorE = ismember(lineSegs, extLineSegs, 'rows') + ismember(flip(lineSegs,2), extLineSegs, 'rows');
+
     A(i, adjNodes*2-1) = A(i, adjNodes*2-1) + (( cellInfo.mu_e * IorE + cellInfo.mu_i * ~IorE ) ./ cellInfo.lengths{node} .* cellInfo.txs{node} .^ 2)';
-    
+    A(i+1, adjNodes*2) = A(i+1, adjNodes*2) + (( cellInfo.mu_e * IorE + cellInfo.mu_i * ~IorE ) ./ cellInfo.lengths{node} .* cellInfo.tys{node} .^ 2)';
+
+    % code above is vectorized version of this loop (without 'j' loop)
+%{
 %     for j = 1:numel(cellInfo.nodesAdjacent{node}) % looping through all connected elements
 %       adjacentNode = cellInfo.nodesAdjacent{node}(j);
 %       
@@ -111,32 +103,11 @@ function [A,b] = velSystem(cellInfo)
 %         A(i,adjacentNode*2-1) = A(i,adjacentNode*2-1) + cellInfo.mu_i / cellInfo.lengths{node}(j) * cellInfo.txs{node}(j)^2;
 %       end
 %     end
+%}
     
   end
   
-  % Setting elements for even rows and even columns
-  for i = 2:2:matSize
-    node = ceil(i/2);
-    adjNodes = cellInfo.nodesAdjacent{node};
-    
-    lineSegs = [repmat(node,1,numel(adjNodes)) ; adjNodes]';
-    IorE = ismember(lineSegs, extLineSegs, 'rows') + ismember(flip(lineSegs,2), extLineSegs, 'rows');
-    A(i, adjNodes*2) = A(i, adjNodes*2) + (( cellInfo.mu_e * IorE + cellInfo.mu_i * ~IorE ) ./ cellInfo.lengths{node} .* cellInfo.tys{node} .^ 2)';
 
-
-%     for j = 1:numel(cellInfo.nodesAdjacent{node}) % looping through all connected elements
-%       adjacentNode = cellInfo.nodesAdjacent{node}(j);
-%       
-%       % Using mu_external if external element
-%       if cellInfo.nodesAdjacent{node}(j) <= cellInfo.externalNodeCount & node <= cellInfo.externalNodeCount
-%         A(i,adjacentNode*2) = A(i,adjacentNode*2) + cellInfo.mu_e / cellInfo.lengths{node}(j) * cellInfo.tys{node}(j)^2;
-%       % Using mu_internal if internal element
-%       else
-%         A(i,adjacentNode*2) = A(i,adjacentNode*2) + cellInfo.mu_i / cellInfo.lengths{node}(j) * cellInfo.tys{node}(j)^2;
-%       end
-%     end
-    
-  end
   
   % Setting elements for everything else in A
   for i = 1:2:matSize
@@ -147,7 +118,9 @@ function [A,b] = velSystem(cellInfo)
     IorE = ismember(lineSegs, extLineSegs, 'rows') + ismember(flip(lineSegs,2), extLineSegs, 'rows');
     A(i+1, adjNodes*2-1) = A(i+1, adjNodes*2-1) + (( cellInfo.mu_e * IorE + cellInfo.mu_i * ~IorE ) ./ cellInfo.lengths{node} .* cellInfo.txs{node} .* cellInfo.tys{node})';
     A(i, adjNodes*2) = A(i+1, adjNodes*2-1);
-    
+  
+    % code above is vectorized version of this loop (without 'j' loop)
+%{
 %     for j = 1:numel(cellInfo.nodesAdjacent{node})
 %       adjacentNode = cellInfo.nodesAdjacent{node}(j);
 %       
@@ -159,6 +132,7 @@ function [A,b] = velSystem(cellInfo)
 %         A(i, adjacentNode*2) = A(i+1, adjacentNode*2-1);
 %       end
 %     end
+%}
 
   end
   
@@ -179,6 +153,8 @@ function [A,b] = velSystem(cellInfo)
     b(i) = b(i) + tensionX;
     b(i+1) = b(i+1) + tensionY;
     
+    % code above is vectorized version of this loop (without 'j' loop)
+%{
 %     for j = 1:numel(cellInfo.nodesAdjacent{node})
 %       
 %       if cellInfo.nodesAdjacent{node}(j) <= cellInfo.externalNodeCount & node <= cellInfo.externalNodeCount
@@ -196,6 +172,7 @@ function [A,b] = velSystem(cellInfo)
 %         b(i+1) = b(i+1) + tensionY; % +
 %       end
 %     end
+%}
     
     %shearing forces
     
@@ -212,37 +189,52 @@ function [A,b] = velSystem(cellInfo)
   end
   
   % prescibe external force
-  for node = 1:cellInfo.totalNodeCount
-    [wallForceX, wallForceY] = calculateWallForce(cellInfo, node);
-    b(node*2-1) = b(node*2-1) - cellInfo.externalForces(node, 1) - wallForceX;
-    b(node*2) = b(node*2) - cellInfo.externalForces(node, 2) - wallForceY;
-  end
+  b(1:2:end) = b(1:2:end) - cellInfo.externalForces(:,1) - cellInfo.xwf;
+  b(2:2:end) = b(2:2:end) - cellInfo.externalForces(:,2) - cellInfo.ywf;
   
+  % code above is a vectorized version of this loop
+%   for node = 1:cellInfo.totalNodeCount
+% %    [wallForceX, wallForceY] = calculateWallForce(cellInfo, node);
+%     b(node*2-1) = b(node*2-1) - cellInfo.externalForces(node, 1) - cellInfo.xwf(node);
+%     b(node*2) = b(node*2) - cellInfo.externalForces(node, 2) - cellInfo.ywf(node);
+%   end
   
-  for i = 1:cellInfo.totalNodeCount
-    if cellInfo.isFixed(i)
-      A(i*2-1,:) = 0;
-      A(i*2-1, i*2-1) = 1;
-      
-      A(i*2,:) = 0;
-      A(i*2, i*2) = 1;
-      
-      b(i*2-1) = 0;
-      b(i*2) = 0;
-    
-    end
-  end
+
+  % Fixing nodes that were specified in 'deform...' functions
+  A(1:2:end,:) = A(1:2:end,:) .* ~cellInfo.isFixed;
+  A(2:2:end,:) = A(2:2:end,:) .* ~cellInfo.isFixed;
+  A(1:2:end, 1:2:end) = A(1:2:end, 1:2:end) + eye(cellInfo.totalNodeCount) .* cellInfo.isFixed;
+  A(2:2:end, 2:2:end) = A(2:2:end, 2:2:end) + eye(cellInfo.totalNodeCount) .* cellInfo.isFixed;
+  
+  b(1:2:end) = b(1:2:end) .* ~cellInfo.isFixed;
+  b(2:2:end) = b(2:2:end) .* ~cellInfo.isFixed;
+  
+  % code above is a vectorized version of this loop
+%   for i = 1:cellInfo.totalNodeCount
+%     if cellInfo.isFixed(i)
+%       A(i*2-1,:) = 0;
+%       A(i*2-1, i*2-1) = 1;
+%       
+%       A(i*2,:) = 0;
+%       A(i*2, i*2) = 1;
+%       
+%       b(i*2-1) = 0;
+%       b(i*2) = 0;
+%     
+%     end
+%   end
   
 end
 
-function [forceX, forceY] = calculateWallForce(cellInfo, nodeNum)
-  forceX = 0;
-  forceY = 0;
-%   if cellInfo.yPosition(nodeNum) > cellInfo.yWall
-%     forceY = (cellInfo.yPosition(nodeNum) - cellInfo.yWall)*-1000;
-%   elseif cellInfo.yPosition(nodeNum) < -1 * cellInfo.yWall
-%     forceY = (cellInfo.yPosition(nodeNum) + cellInfo.yWall)*-1000;
-%   else
-%     forceY = 0;
-%   end
-end
+  % delete
+% function [forceX, forceY] = calculateWallForce(cellInfo, nodeNum)
+%   forceX = 0;
+%   forceY = 0;
+% %   if cellInfo.yPosition(nodeNum) > cellInfo.yWall
+% %     forceY = (cellInfo.yPosition(nodeNum) - cellInfo.yWall)*-1000;
+% %   elseif cellInfo.yPosition(nodeNum) < -1 * cellInfo.yWall
+% %     forceY = (cellInfo.yPosition(nodeNum) + cellInfo.yWall)*-1000;
+% %   else
+% %     forceY = 0;
+% %   end
+% end
