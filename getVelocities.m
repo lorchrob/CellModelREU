@@ -16,7 +16,6 @@ The 'cellInfo' passed in through argument does NOT have updated
 positions.
 %}
 function velocities = getVelocities(positions, cellInfo)
-  xw = []; yw = [];
   cellInfoNew = cellInfo;
   cellInfoNew.xPosition = positions(1:2:end);
   cellInfoNew.yPosition = positions(2:2:end);
