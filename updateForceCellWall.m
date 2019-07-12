@@ -8,14 +8,10 @@ Function takes in:
 
 Function then
  - calculates the forces on each node due to the wall
- - sets these forces into 'cellInfo.externalForces'
+ - sets these forces into 'cellInfo.xwf' and 'cellInfo.ywf' . (xwf = wall force in x direction)
 
 Function returns
  - 'cellInfo' with updated external forces
-
-
-xw =   [-190, -150,  150, 150, 190, 190, 150, 150, -150, -190]; %#ok<UNRCH>
-yw = 2*[ -15, -2.5, -2.5, -15, -15,  15,  15, 2.5,  2.5,   15];
 
 %}
 
