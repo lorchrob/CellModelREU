@@ -8,9 +8,8 @@ function cellInfoNew = stepEuler(cellInfo, dt, totalTime, dtPlot)
   tPlot = 0;
   
   if ~exist('dtPlot', 'var')
-    dtPlot = 0.1
+    dtPlot = dt * 10;
   end
-%  dtPlot = 0.1;
   
   allPos = zeros(cellInfoNew.totalNodeCount,2);
   step = 1;
@@ -33,7 +32,7 @@ function cellInfoNew = stepEuler(cellInfo, dt, totalTime, dtPlot)
     cellInfoNew.yVelocity = vels(2:2:end);
     cellInfoNew = calculateNodeInfo(cellInfoNew);
     
-    if norm(vels(1:2:end)) < 0.09 & norm(vels(2:2:end)) < 0.09
+    if norm(vels(1:2:end) * dt) < 0.0001 & norm(vels(2:2:end) * dt) < 0.0001
       break
     end
     
