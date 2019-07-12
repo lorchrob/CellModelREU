@@ -5,25 +5,18 @@ we have Ax = b. Used by various stepping methods.
 function [A,b] = velSystem(cellInfo)
   matSize = cellInfo.totalNodeCount * 2;
   A = zeros(matSize);
-  b = zeros(matSize, 1);
-  extLineSegs = cellInfo.externalLineSegments; % all the external line segments
-  
+  b = zeros(matSize, 1);  
   
   % Setting the diagonal elements (u1, v1, u2, v2, u3, v3, ...)
-  for i = 1:matSize
+  for i = 1:2:matSize
     node = ceil(i/2);
-    adjNodes = cellInfo.nodesAdjacent{node};
-    
-    % creates a vector of line segments around node 
-    lineSegs = [ repmat( node,1,numel(adjNodes) ) ; adjNodes]';
     
     % Vector of booleans saying if each line segment (from above) are
     %   external (1) or internal (0)
-    IorE = ismember(lineSegs, extLineSegs, 'rows') + ismember(flip(lineSegs,2), extLineSegs, 'rows');
-
-    XorY = mod(i,2) == 1; % true if 'i' is odd. false if even.
+    IorE = cellInfo.IorE{node};
     
-    A(i,i) = A(i,i) - sum( ( cellInfo.mu_e * IorE + cellInfo.mu_i * ~IorE ) ./ cellInfo.lengths{node} .* (cellInfo.txs{node}.^2 * XorY + cellInfo.tys{node}.^2 * ~XorY) );
+    A(i,i) = A(i,i) - sum( ( cellInfo.mu_e * IorE + cellInfo.mu_i * ~IorE ) ./ cellInfo.lengths{node} .* (cellInfo.txs{node}.^2) );
+    A(i+1, i+1) = A(i+1, i+1) - sum( ( cellInfo.mu_e * IorE + cellInfo.mu_i * ~IorE ) ./ cellInfo.lengths{node} .* (cellInfo.tys{node}.^2) );
     
     % experimenting with trying to vectorize 'i' loops. Probably impossible
     %   to do since cellInfo is a cell and you can't do vector stuff with
@@ -38,10 +31,8 @@ function [A,b] = velSystem(cellInfo)
   % Setting (some of) the subdiagonal and superdiagonal elements
   for i = 2:2:matSize
     node = ceil(i/2);
-    adjNodes = cellInfo.nodesAdjacent{node};
     
-    lineSegs = [ repmat(node,1,numel(adjNodes)) ; adjNodes ]';
-    IorE = ismember(lineSegs, extLineSegs, 'rows') + ismember(flip(lineSegs,2), extLineSegs, 'rows');
+    IorE = cellInfo.IorE{node};
     A(i, i-1) = A(i, i-1) - sum(( cellInfo.mu_e * IorE + cellInfo.mu_i * ~IorE ) ./ cellInfo.lengths{node} .* cellInfo.tys{node} .* cellInfo.txs{node} );
     A(i-1, i) = A(i, i-1);
   end
@@ -50,9 +41,8 @@ function [A,b] = velSystem(cellInfo)
   for i = 1:2:matSize
     node = ceil(i/2);
     adjNodes = cellInfo.nodesAdjacent{node};
-    
-    lineSegs = [repmat(node,1,numel(adjNodes)) ; adjNodes]';
-    IorE = ismember(lineSegs, extLineSegs, 'rows') + ismember(flip(lineSegs,2), extLineSegs, 'rows');
+
+    IorE = cellInfo.IorE{node};
 
     A(i, adjNodes*2-1) = A(i, adjNodes*2-1) + (( cellInfo.mu_e * IorE + cellInfo.mu_i * ~IorE ) ./ cellInfo.lengths{node} .* cellInfo.txs{node} .^ 2)';
     A(i+1, adjNodes*2) = A(i+1, adjNodes*2) + (( cellInfo.mu_e * IorE + cellInfo.mu_i * ~IorE ) ./ cellInfo.lengths{node} .* cellInfo.tys{node} .^ 2)'; 
@@ -62,9 +52,9 @@ function [A,b] = velSystem(cellInfo)
   for i = 1:2:matSize
     node = ceil(i/2);
     adjNodes = cellInfo.nodesAdjacent{node};
-    
-    lineSegs = [repmat(node,1,numel(adjNodes)) ; adjNodes]';
-    IorE = ismember(lineSegs, extLineSegs, 'rows') + ismember(flip(lineSegs,2), extLineSegs, 'rows');
+
+    IorE = cellInfo.IorE{node};
+
     A(i+1, adjNodes*2-1) = A(i+1, adjNodes*2-1) + (( cellInfo.mu_e * IorE + cellInfo.mu_i * ~IorE ) ./ cellInfo.lengths{node} .* cellInfo.txs{node} .* cellInfo.tys{node})';
     A(i, adjNodes*2) = A(i+1, adjNodes*2-1);
   end  
@@ -72,10 +62,8 @@ function [A,b] = velSystem(cellInfo)
   % Setting b vector.
   for i = 1:2:matSize
     node = ceil(i/2);
-    adjNodes = cellInfo.nodesAdjacent{node};
     
-    lineSegs = [repmat(node,1,numel(adjNodes)) ; adjNodes]';
-    IorE = ismember(lineSegs, extLineSegs, 'rows') + ismember(flip(lineSegs,2), extLineSegs, 'rows');
+    IorE = cellInfo.IorE{node};
     
     tensionX = - sum(( cellInfo.k_te * IorE + cellInfo.k_ti * ~IorE ) .* (cellInfo.lengths{node} ./ cellInfo.refLengths{node} - 1) .* cellInfo.txs{node});
     tensionY = - sum(( cellInfo.k_te * IorE + cellInfo.k_ti * ~IorE ) .* (cellInfo.lengths{node} ./ cellInfo.refLengths{node} - 1) .* cellInfo.tys{node});

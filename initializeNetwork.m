@@ -12,7 +12,7 @@ function cellInfo = initializeNetwork(externalNodeCount, simulationType)
 
   % set initial values for some fields of the 'cellInfo' struct
   cellInfo.externalNodeCount = externalNodeCount;
-  cellInfo.radius = 12.4/2; 
+  cellInfo.radius = 15/2; 
   cellInfo.refArea = pi*cellInfo.radius^2;
   % underscores represent subscripts
   cellInfo.k_te = 1200; %1200
@@ -43,9 +43,11 @@ function cellInfo = initializeNetwork(externalNodeCount, simulationType)
   cellInfo.lineSegments = [];
   for i = 1:cellInfo.totalNodeCount
     for cnc = 1:numel(cellInfo.nodesAdjacent{i})
-      cellInfo.lineSegments = [cellInfo.lineSegments;i,cellInfo.nodesAdjacent{i}(cnc)];
+      cellInfo.lineSegments = [cellInfo.lineSegments ; i, cellInfo.nodesAdjacent{i}(cnc)];
     end
   end
+  
+  
   %  There are twice as many indices as we actually need for our plots,
   %  sort and eliminate duplicates:
   cellInfo.lineSegments = unique(sort(cellInfo.lineSegments,2),'rows');
@@ -55,8 +57,17 @@ function cellInfo = initializeNetwork(externalNodeCount, simulationType)
   % forces (may be updated later)
   cellInfo.isFixed = false(cellInfo.totalNodeCount, 1);
   cellInfo.externalForces = zeros(cellInfo.totalNodeCount, 2);
-  cellInfo.xwf = zeros(cellInfo.totalNodeCount,1);
-  cellInfo.ywf = cellInfo.xwf;
+  cellInfo.xwf = zeros(cellInfo.totalNodeCount,1); % x wall force
+  cellInfo.ywf = cellInfo.xwf; % y wall force
+  cellInfo.xv = zeros(cellInfo.totalNodeCount,1); % x prescribed velocity
+  cellInfo.yv = cellInfo.xv; % y prescribed velocity
+  
+  % IorE says if each line segment corresponding to '.nodesAdjacent' is external or not
+  for i = 1:cellInfo.totalNodeCount
+    lineSegs = [repmat(i,1,numel(cellInfo.nodesAdjacent{i})); cellInfo.nodesAdjacent{i}]';
+    cellInfo.IorE{i} = ismember(lineSegs, cellInfo.externalLineSegments, 'rows') + ismember( flip(lineSegs,2), cellInfo.externalLineSegments, 'rows');
+  end
+
 end
 
 %{
