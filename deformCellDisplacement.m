@@ -4,6 +4,10 @@ be moved are specified by 'nodeNums' (an array of integers), and they are each
 moved by the amount specified in 'positionChanges' (an nx2 array of pairs of
 floats). 
 
+Update 7/12/2019 : 'fixedNodes' are prescribed a velocity as specified in
+'prescVel' argument. If you want those nodes to be fixed, prescribe
+velocity of [0,0]
+
 As an example, if the second integer in 'nodeNums' is 5 and the second pair
 of floats in 'positionChanges' is [1 -4], then node 5 will be moved 1 to
 the right (x direction) and 4 down (y direction).
@@ -11,8 +15,10 @@ the right (x direction) and 4 down (y direction).
 NOTE: There must be exactly one pair of position changes (x, y) for each node num
 (i.e., numel(positionChanges) = 2 * numel(nodeNums)).
 
+
+
 %}
-function cellInfoNew = deformCellDisplacement(cellInfo, nodeNums, fixedNodes, positionChanges)
+function cellInfoNew = deformCellDisplacement(cellInfo, nodeNums, fixedNodes, positionChanges, prescVel)
   cellInfoNew = cellInfo;
 
   for i = 1 : numel(nodeNums)
@@ -25,8 +31,13 @@ function cellInfoNew = deformCellDisplacement(cellInfo, nodeNums, fixedNodes, po
     %cellInfoNew.isFixed(nodeNums(i)) = true; 
   end
   
-   cellInfoNew.isFixed = false(cellInfo.totalNodeCount, 1);
-   cellInfoNew.isFixed(fixedNodes) = true; 
+  if exist('prescVel', 'var')
+    cellInfoNew.xv(fixedNodes) = prescVel(:,1);
+    cellInfoNew.yv(fixedNodes) = prescVel(:,2);
+  end
+
+  cellInfoNew.isFixed = false(cellInfo.totalNodeCount, 1);
+  cellInfoNew.isFixed(fixedNodes) = true; 
 end
 
 

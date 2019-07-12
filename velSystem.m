@@ -206,8 +206,8 @@ function [A,b] = velSystem(cellInfo)
   A(1:2:end, 1:2:end) = A(1:2:end, 1:2:end) + eye(cellInfo.totalNodeCount) .* cellInfo.isFixed;
   A(2:2:end, 2:2:end) = A(2:2:end, 2:2:end) + eye(cellInfo.totalNodeCount) .* cellInfo.isFixed;
   
-  b(1:2:end) = b(1:2:end) .* ~cellInfo.isFixed;
-  b(2:2:end) = b(2:2:end) .* ~cellInfo.isFixed;
+  b(1:2:end) = b(1:2:end) .* ~cellInfo.isFixed + cellInfo.xv;
+  b(2:2:end) = b(2:2:end) .* ~cellInfo.isFixed + cellInfo.yv;
   
   % code above is a vectorized version of this loop
 %   for i = 1:cellInfo.totalNodeCount
