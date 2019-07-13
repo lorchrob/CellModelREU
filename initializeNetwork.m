@@ -1,10 +1,16 @@
 %{
 Main function to initialize the system
 %}
-function cellInfo = initializeNetwork(externalNodeCount, simulationType)  
-  if exist('simulationType', 'var') && strcmp(simulationType, 'wall') 
-    cellInfo.xw =   [-190, -150,  150, 150, 190, 190, 150, 150, -150, -190];
-    cellInfo.yw = 2*[ -15, -2.5, -2.5, -15, -15,  15,  15, 2.5,  2.5,   15];
+function cellInfo = initializeNetwork(externalNodeCount, simulationType, xw, yw)  
+  if exist('simulationType', 'var') && strcmp(simulationType, 'wall')
+    if ~exist('xw', 'var') & ~exist('yw', 'var')
+      cellInfo.xw =   [-190, -150,  150, 150, 190, 190, 150, 150, -150, -190];
+      cellInfo.yw = 2*[ -15, -2.5, -2.5, -15, -15,  15,  15, 2.5,  2.5,   15];
+    else
+      cellInfo.xw = xw;
+      cellInfo.yw = yw;
+    end
+    
   else
     cellInfo.xw = [-500,  500, 500, -500]; % defaults to a square with length 1000
     cellInfo.yw = [-500, -500, 500,  500];
