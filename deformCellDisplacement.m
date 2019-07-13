@@ -18,7 +18,7 @@ NOTE: There must be exactly one pair of position changes (x, y) for each node nu
 
 
 %}
-function cellInfoNew = deformCellDisplacement(cellInfo, nodeNums, fixedNodes, positionChanges, prescVel)
+function cellInfoNew = deformCellDisplacement(cellInfo, nodeNums, fixedX, fixedY, positionChanges, prescXVel, prescYVel)
   cellInfoNew = cellInfo;
 
   for i = 1 : numel(nodeNums)
@@ -31,13 +31,16 @@ function cellInfoNew = deformCellDisplacement(cellInfo, nodeNums, fixedNodes, po
     %cellInfoNew.isFixed(nodeNums(i)) = true; 
   end
   
-  if exist('prescVel', 'var')
-    cellInfoNew.xv(fixedNodes) = prescVel(:,1);
-    cellInfoNew.yv(fixedNodes) = prescVel(:,2);
+  if exist('prescXVel', 'var') && exist('prescYVel', 'var')
+    cellInfoNew.xv(fixedX) = prescXVel(:);
+    cellInfoNew.yv(fixedY) = prescYVel(:);
   end
 
-  cellInfoNew.isFixed = false(cellInfo.totalNodeCount, 1);
-  cellInfoNew.isFixed(fixedNodes) = true; 
+%   cellInfoNew.isFixed = false(cellInfo.totalNodeCount, 1);
+  cellInfoNew.isFixed(fixedX, 1) = true; 
+  cellInfoNew.isFixed(fixedY, 2) = true;
+  cellInfoNew.xFix = fixedX;
+  cellInfoNew.yFix = fixedY;
 end
 
 

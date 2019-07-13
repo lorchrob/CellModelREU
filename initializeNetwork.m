@@ -61,7 +61,11 @@ function cellInfo = initializeNetwork(externalNodeCount, simulationType, xw, yw)
   
   % For now, we say that no nodes are fixed and there are no external
   % forces (may be updated later)
-  cellInfo.isFixed = false(cellInfo.totalNodeCount, 1);
+  cellInfo.isFixed = false(cellInfo.totalNodeCount, 2); % can fix x and y positions seperately (i.e. fix x but not y)
+  cellInfo.xFix = [];
+  cellInfo.yFix = [];
+  cellInfo.noMeanXChange = false; % true if you want average x position to stay same over all nodes
+  cellInfo.noMeanYChange = false; % same as above but for y position.
   cellInfo.externalForces = zeros(cellInfo.totalNodeCount, 2);
   cellInfo.xwf = zeros(cellInfo.totalNodeCount,1); % x wall force
   cellInfo.ywf = cellInfo.xwf; % y wall force

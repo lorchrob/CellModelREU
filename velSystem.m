@@ -89,13 +89,27 @@ function [A,b] = velSystem(cellInfo)
   b(2:2:end) = b(2:2:end) - cellInfo.externalForces(:,2) - cellInfo.ywf;    
 
   % Fixing nodes that were specified in 'deform...' functions
-  A(1:2:end,:) = A(1:2:end,:) .* ~cellInfo.isFixed;
-  A(2:2:end,:) = A(2:2:end,:) .* ~cellInfo.isFixed;
-  A(1:2:end, 1:2:end) = A(1:2:end, 1:2:end) + eye(cellInfo.totalNodeCount) .* cellInfo.isFixed;
-  A(2:2:end, 2:2:end) = A(2:2:end, 2:2:end) + eye(cellInfo.totalNodeCount) .* cellInfo.isFixed;
+  A(1:2:end,:) = A(1:2:end,:) .* ~cellInfo.isFixed(:,1);
+  A(2:2:end,:) = A(2:2:end,:) .* ~cellInfo.isFixed(:,2);
+  A(1:2:end, 1:2:end) = A(1:2:end, 1:2:end) + eye(cellInfo.totalNodeCount) .* cellInfo.isFixed(:,1);
+  A(2:2:end, 2:2:end) = A(2:2:end, 2:2:end) + eye(cellInfo.totalNodeCount) .* cellInfo.isFixed(:,2);
 
-  b(1:2:end) = b(1:2:end) .* ~cellInfo.isFixed + cellInfo.xv;
-  b(2:2:end) = b(2:2:end) .* ~cellInfo.isFixed + cellInfo.yv;
+  b(1:2:end) = b(1:2:end) .* ~cellInfo.isFixed(:,1) + cellInfo.xv;
+  b(2:2:end) = b(2:2:end) .* ~cellInfo.isFixed(:,2) + cellInfo.yv;
+  
+  
+  % setting the mean x change to 0 if specified
+  if cellInfo.noMeanXChange 
+    A(cellInfo.xFix(1)*2-1, 1:2:end) = 1;
+    b(cellInfo.xFix(1)*2-1) = 0;
+  end
+  
+  % same for y change
+  if cellInfo.noMeanYChange
+    A(cellInfo.yFix(1)*2, 2:2:end) = 1;
+    b(cellInfo.yFix(1)*2) = 0;
+  end
+  
 
 end
 

@@ -11,7 +11,7 @@ direction and -4 in the y direction will be applied.
 NOTE: There must be exactly one pair of forces (x, y) for each node num
 (i.e., numel(externalForces) = 2 * numel(nodeNums)).
 %}
-function cellInfoNew = deformCellForce(cellInfo, nodeNums, fixedNodes, externalForces, prescVel)
+function cellInfoNew = deformCellForce(cellInfo, nodeNums, fixedX, fixedY, externalForces, prescXVel, prescYVel)
   cellInfoNew = cellInfo;
   
   for i = 1 : numel(nodeNums)
@@ -19,11 +19,13 @@ function cellInfoNew = deformCellForce(cellInfo, nodeNums, fixedNodes, externalF
     cellInfoNew.externalForces(nodeNums(i),:) = cellInfoNew.externalForces(nodeNums(i),:) + externalForces(i,:);
   end
   
-  if exist('prescVel', 'var')
-    cellInfoNew.xv(fixedNodes) = prescVel(:,1);
-    cellInfoNew.yv(fixedNodes) = prescVel(:,2);
+  if exist('prescXVel', 'var') && exist('prescYVel', 'var')
+    cellInfoNew.xv(fixedX) = prescXVel(:);
+    cellInfoNew.yv(fixedY) = prescYVel(:);
   end
   
-  cellInfoNew.isFixed = false(cellInfo.totalNodeCount, 1);
-  cellInfoNew.isFixed(fixedNodes) = true; 
+%   cellInfoNew.isFixed = false(cellInfo.totalNodeCount, 1);
+  cellInfoNew.isFixed(fixedX, 1) = true; 
+  cellInfoNew.isFixed(fixedY, 2) = true;
+  
 end
