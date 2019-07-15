@@ -3,7 +3,7 @@
 %% Init
 externalNodeCount = 20;
 r = initializeNetwork(externalNodeCount, 'wall');
-r_def = deformCellDisplacement(r, [], [21], [21 1 11], []);
+r_def = deformCellDisplacement(r, [], [], [21], [21 1 11]);
 
 
 %% Stepping
