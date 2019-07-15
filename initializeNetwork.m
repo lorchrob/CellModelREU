@@ -22,7 +22,7 @@ function cellInfo = initializeNetwork(externalNodeCount, simulationType, xw, yw)
   cellInfo.refArea = pi*cellInfo.radius^2;
   % underscores represent subscripts
   cellInfo.k_te = 1200; %1200
-  cellInfo.k_ti = 1200; %1200
+  cellInfo.k_ti = 900; %1200
   cellInfo.mu_e = 200; %200
   cellInfo.mu_i = 100; %100
   cellInfo.k_be = 90; %90
@@ -94,8 +94,8 @@ function cellInfo = setupInteriorNodes(cellInfo)
   [dl,bt] = decsg(boungeominfo,setformulas,nameofbound);
   model = createpde;
   geometryFromEdges(model, dl);
-  generateMesh(model, 'Hmax', cellInfo.externalRefLength', 'Hmin', cellInfo.externalRefLength, 'Hgrad', 1,...
-    'GeometricOrder', 'linear');
+  generateMesh(model, 'Hmax', 7.7, 'Hmin', 7.4, 'Hgrad', 1,...
+    'GeometricOrder', 'linear'); %cellInfo.externalRefLength for both
     
   tol = 1e-12;
   [a,b] = ismembertol([cellInfo.xPosition, cellInfo.yPosition], model.Mesh.Nodes', tol, 'ByRows', true);

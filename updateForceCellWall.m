@@ -19,7 +19,7 @@ function cellInfoNew = updateForceCellWall(cellInfo, xw, yw)
   cellInfoNew = cellInfo;
 %  xw =   [-190, -150,  150, 150, 190, 190, 150, 150, -150, -190];
 %  yw = 2*[ -15, -2.5, -2.5, -15, -15,  15,  15, 2.5,  2.5,   15];
-  wallForceMag = 2000; % Magnitude of force from wall
+  wallForceMag = 1000; % Magnitude of force from wall
   
 
   [dists,dot_dist,overlap,norm_x,norm_y,norm_arc,type] = ...
