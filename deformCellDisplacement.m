@@ -14,9 +14,6 @@ the right (x direction) and 4 down (y direction).
 
 NOTE: There must be exactly one pair of position changes (x, y) for each node num
 (i.e., numel(positionChanges) = 2 * numel(nodeNums)).
-
-
-
 %}
 function cellInfoNew = deformCellDisplacement(cellInfo, nodeNums, fixedX, fixedY, positionChanges, prescXVel, prescYVel)
   cellInfoNew = cellInfo;
