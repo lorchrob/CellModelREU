@@ -4,10 +4,6 @@ be moved are specified by 'nodeNums' (an array of integers), and they are each
 moved by the amount specified in 'positionChanges' (an nx2 array of pairs of
 floats). 
 
-Update 7/12/2019 : 'fixedNodes' are prescribed a velocity as specified in
-'prescVel' argument. If you want those nodes to be fixed, prescribe
-velocity of [0,0]
-
 As an example, if the second integer in 'nodeNums' is 5 and the second pair
 of floats in 'positionChanges' is [1 -4], then node 5 will be moved 1 to
 the right (x direction) and 4 down (y direction).
@@ -16,9 +12,26 @@ NOTE: There must be exactly one pair of position changes (x, y) for each node nu
 (i.e., numel(positionChanges) = 2 * numel(nodeNums)).
 
 
+Arguments:
+  - cellInfo : from running initializeNetwork
+  - nodeNums : vector. the nodes that you want to displace
+  - positionChanges : the position changes for 'nodeNums'. Matrix (nx2) in the
+  form [x1, y1 ; x2, y2 ; x3, y3; ...] where x1 is the change in x position
+  of first index of 'nodeNum'.
+  - fixedX : the nodes that you want to fix the 'x' position of
+  - fixedY : the nodes that you want to fix the 'y' position of
+  - prescXVel : the prescribed x velocity for each node specified in
+  'fixedX'. 
+  - prescYVel : the prescribed y velocity for each node specified in
+  'fixedY'.
+
+NOTE:
+if you set cellInfo.noMeanXChange to true, then the forces equation for the
+FIRST index of fixedX and/or fixedY are replaced by the equation the
+specifies that the sum of x(or y) velocities is 0.
 
 %}
-function cellInfoNew = deformCellDisplacement(cellInfo, nodeNums, fixedX, fixedY, positionChanges, prescXVel, prescYVel)
+function cellInfoNew = deformCellDisplacement(cellInfo, nodeNums, positionChanges, fixedX, fixedY, prescXVel, prescYVel)
   cellInfoNew = cellInfo;
 
   for i = 1 : numel(nodeNums)
