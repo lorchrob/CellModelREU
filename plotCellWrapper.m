@@ -2,12 +2,16 @@
 Wrapper functino for plotCell (i.e., its only job is to call plotCell).
 Set up to be called by the ode solvers.
 %}
-function status = plotCellWrapper(~, y, flag, externalNodeCount, simulationType, modelType)
+function status = plotCellWrapper(t, y, flag, externalNodeCount, simulationType, modelType)
   persistent n
   if isempty(n)
       n = 0;
   end
-    
+  
+  % aren't defined until the end
+  persistent yOld
+  persistent tOld
+  
   % only plot every 15 steps  
   if mod(n, 15) == 0
     if strcmp(flag, 'init') || strcmp(flag, 'done')
@@ -23,6 +27,11 @@ function status = plotCellWrapper(~, y, flag, externalNodeCount, simulationType,
         cellInfo.modelType = modelType;
       end
     
+      if exist('yOld', 'var') 
+        cellInfo.xVelocity = (y(1:2:end) - yOld(1:2:end))/(t - tOld);
+        cellInfo.yVelocity = (y(2:2:end) - yOld(2:2:end))/(t - tOld);
+      end
+      
       cellInfo.xPosition = y(1:2:end);
       cellInfo.yPosition = y(2:2:end);
       plotCell(cellInfo)
@@ -32,4 +41,8 @@ function status = plotCellWrapper(~, y, flag, externalNodeCount, simulationType,
   
   n = n + 1;
   status = 0;
+  
+  yOld = y;
+
+  tOld = t;
 end

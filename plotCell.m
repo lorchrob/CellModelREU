@@ -17,11 +17,11 @@ function plotCell(cellInfo)
        'm');
   axis manual
   
-%   if isfield(cellInfo, "modelType") && cellInfo.modelType == "timeStepper"
-%     quiver(cellInfo.xPosition(:), cellInfo.yPosition(:),...
-%            cellInfo.xVelocity(:), cellInfo.yVelocity(:),...
-%            0, 'k');
-%   end
+  if isfield(cellInfo, "modelType") && cellInfo.modelType == "timeStepper"
+    quiver(cellInfo.xPosition(:), cellInfo.yPosition(:),...
+           cellInfo.xVelocity(:), cellInfo.yVelocity(:),...
+           0, 'k');
+  end
   
   hold off
 end
