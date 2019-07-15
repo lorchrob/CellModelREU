@@ -54,9 +54,6 @@ function force = calculateForce(positions, nodeNum, cellInfoRef)
     Im2Pos = [positions(nodeIm2, 1), positions(nodeIm2, 2)];
     
     % Getting angles between external elements
-%     angleIp1 = atan2( crossProd(nodePos - Ip1Pos, Ip2Pos - Ip1Pos), dot(nodePos - Ip1Pos, Ip2Pos - Ip1Pos));
-%     angleI = atan2( crossProd(Im1Pos - nodePos, Ip1Pos - nodePos), dot(Im1Pos - nodePos, Ip1Pos - nodePos));
-%     angleIm1 = atan2( crossProd(Im2Pos - Im1Pos, nodePos - Im1Pos), dot(Im2Pos - Im1Pos, nodePos - Im1Pos));
     angleIp1 = atan2( crossProd(Ip1Pos - nodePos, Ip2Pos - Ip1Pos), dot(Ip1Pos - nodePos, Ip2Pos - Ip1Pos));
     angleI = atan2( crossProd(nodePos - Im1Pos, Ip1Pos - nodePos), dot(nodePos - Im1Pos, Ip1Pos - nodePos));
     angleIm1 = atan2( crossProd(Im1Pos - Im2Pos, nodePos - Im1Pos), dot(Im1Pos - Im2Pos, nodePos - Im1Pos));
@@ -85,6 +82,22 @@ function force = calculateForce(positions, nodeNum, cellInfoRef)
   % add external force, zero vector unless otherwise changed by
   % 'deformCellForce' function
   force = force + cellInfoRef.externalForces(nodeNum,:);
+  
+  % calculate and incorporate the force from the wall
+  wallForceMag = 2000; % Magnitude of force from wall
+  [dists,dot_dist,overlap,norm_x,norm_y,norm_arc,type] = ...
+    dist_from_pt_to_line_segs(nodePos(1), nodePos(2), cellInfoRef.xw, cellInfoRef.yw);
+  [mindists,inds] = min(dists,[],1);
+  %lininds = sub2ind(size(dists),inds,1:cellInfoRef.totalNodeCount); % fix
+  my_eps = 0.1;
+  in_or_out = inpolygon(nodePos(1),nodePos(2),cellInfoRef.xw,cellInfoRef.yw);
+  ramp_func = @(x,e) (x > -e).*(x < 0).*(x+e).^2.*(e-2*x)./e.^3+(x >= 0);
+  fxnwf = (wallForceMag*(norm_x(inds).*...
+    ramp_func((1-2*in_or_out').*mindists,my_eps)))';
+  fynwf = (wallForceMag*(norm_y(inds).*...
+    ramp_func((1-2*in_or_out').*mindists,my_eps)))';
+  wallForce = [fxnwf, fynwf];
+  force = force + wallForce;
 end
 
 function cross = crossProd(v1, v2)

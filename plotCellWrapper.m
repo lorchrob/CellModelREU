@@ -3,12 +3,14 @@ Wrapper functino for plotCell (i.e., its only job is to call plotCell).
 Set up to be called by the ode solvers.
 %}
 function status = plotCellWrapper(t, y, flag, externalNodeCount, simulationType, modelType)
+  % 'n' used to keep track of the iteration so that we don't have to plot
+  % every time
   persistent n
   if isempty(n)
       n = 0;
   end
   
-  % aren't defined until the end
+  % aren't defined until the end, used for calculating velocities
   persistent yOld
   persistent tOld
   
