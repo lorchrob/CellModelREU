@@ -109,8 +109,6 @@ function [A,b] = velSystem(cellInfo)
     A(cellInfo.yFix(1)*2, 2:2:end) = 1;
     b(cellInfo.yFix(1)*2) = 0;
   end
-  
-
 end
 
 

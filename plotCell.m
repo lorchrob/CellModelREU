@@ -2,19 +2,14 @@
 Function to plot a cell with a red membrane and a blue interior
 %}
 function plotCell(cellInfo)  
-
-  extLineSegs = cellInfo.externalLineSegments;
-  lineSegs = cellInfo.lineSegments;
-  IorE = logical(ismember(lineSegs, extLineSegs, 'rows') + ismember(flip(lineSegs,2), extLineSegs, 'rows'));
-  
-  plot( [cellInfo.xPosition(cellInfo.lineSegments(IorE, 1)), cellInfo.xPosition(cellInfo.lineSegments(IorE, 2))]',... 
-       [cellInfo.yPosition(cellInfo.lineSegments(IorE, 1)), cellInfo.yPosition(cellInfo.lineSegments(IorE, 2))]',...
-       'r');
+  plot([cellInfo.xPosition(cellInfo.internalLineSegments(1:end, 1)), cellInfo.xPosition(cellInfo.internalLineSegments(1:end, 2))]',... 
+       [cellInfo.yPosition(cellInfo.internalLineSegments(1:end, 1)), cellInfo.yPosition(cellInfo.internalLineSegments(1:end, 2))]',...
+       'b');
   axis([-20 20 -20 20])
   hold on
-  plot([cellInfo.xPosition(cellInfo.lineSegments(~IorE, 1)), cellInfo.xPosition(cellInfo.lineSegments(~IorE, 2))]',... 
-       [cellInfo.yPosition(cellInfo.lineSegments(~IorE, 1)), cellInfo.yPosition(cellInfo.lineSegments(~IorE, 2))]',...
-       'b');
+  plot([cellInfo.xPosition(cellInfo.externalLineSegments(1:end, 1)), cellInfo.xPosition(cellInfo.externalLineSegments(1:end, 2))]',... 
+       [cellInfo.yPosition(cellInfo.externalLineSegments(1:end, 1)), cellInfo.yPosition(cellInfo.externalLineSegments(1:end, 2))]',...
+       'r');
   hold on
    
   plot([ cellInfo.xw(1:end-1) ; cellInfo.xw(2:end) ]',...
@@ -22,12 +17,11 @@ function plotCell(cellInfo)
        'm');
   axis manual
   
-  if isfield(cellInfo, "modelType") && cellInfo.modelType == "timeStepper"
-     
-    quiver(cellInfo.xPosition(:), cellInfo.yPosition(:),...
-           cellInfo.xVelocity(:), cellInfo.yVelocity(:),...
-           0, 'k');
-  end
+%   if isfield(cellInfo, "modelType") && cellInfo.modelType == "timeStepper"
+%     quiver(cellInfo.xPosition(:), cellInfo.yPosition(:),...
+%            cellInfo.xVelocity(:), cellInfo.yVelocity(:),...
+%            0, 'k');
+%   end
   
   hold off
 end
