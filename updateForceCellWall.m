@@ -3,7 +3,7 @@ Function to calculate the forces on nodes due to a wall. Should be run at
 every timestep.
 
 Function takes in:
- - an x 'wall'
+ - an x and y 'wall'
  - cellInfo
 
 Function then
@@ -45,20 +45,7 @@ function cellInfoNew = updateForceCellWall(cellInfo, xw, yw)
     ramp_func((1-2*in_or_out').*mindists,my_eps)))';
   
   cellInfoNew.xwf(:) = fxnwf;
-  cellInfoNew.ywf(:) = fynwf;
-
-
-
-%   for i = 1:cellInfo.totalNodeCount
-%     if cellInfoNew.yPosition(i) - max(xw) > 0
-%       cellInfoNew.externalForces(i,2) = -abs(cellInfoNew.yPosition(i) - max(xw)) * 200;
-%     end
-%     
-%     if min(xw) - cellInfoNew.yPosition(i) > 0
-%       cellInfoNew.externalForces(i,2) = abs(min(xw) - cellInfoNew.yPosition(i)) * 200;
-%     end
-%   end
-  
+  cellInfoNew.ywf(:) = fynwf;  
 end
 
 
