@@ -3,6 +3,7 @@ Cell wall scenario script
 
 %}
 %% Initialization
+addpath('C:\Users\rlorch\Desktop\CellModelREU')
 dt = 0.0001
 dtPlot = dt * 10;
 totalTime = 1;

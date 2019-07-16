@@ -7,6 +7,7 @@ makes (the most) sense to use internal node to specify no mean X and Y
 
 %}
 %% Initialization
+addpath('C:\Users\rlorch\Desktop\CellModelREU')
 dt = 0.00005
 dtPlot = dt * 10;
 totalTime = 0.5;

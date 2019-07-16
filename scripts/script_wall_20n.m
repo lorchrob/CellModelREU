@@ -7,6 +7,7 @@ node 23 is bottom right of center node
 
 %}
 %% Initialization
+addpath('C:\Users\rlorch\Desktop\CellModelREU')
 dt = 0.0000001;
 dtPlot = dt * 10;
 totalTime = 0.5;

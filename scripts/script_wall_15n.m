@@ -12,6 +12,7 @@ n19: no mean y change
 
 %}
 %% Initialization
+addpath('C:\Users\rlorch\Desktop\CellModelREU')
 dt = 0.00001
 dtPlot = dt * 10;
 totalTime = 0.5;

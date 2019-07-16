@@ -16,6 +16,7 @@ xw = [-l,  l, l, -l, -l];
 yw = [-l, -l, l,  l, -l];
 
 %%
+addpath('C:\Users\rlorch\Desktop\CellModelREU')
 c = initializeNetwork(10, 'wall', xw, yw);
 c_def = deformCellDisplacement(c, [], [], [11,12], [11,12]); % 
 c_new = stepEuler(c_def, dt, totalTime, dtPlot);

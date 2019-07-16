@@ -14,6 +14,7 @@ forcesX = cos(theta) * f;
 forcesY = sin(theta) * f;
 
 %%
+addpath('C:\Users\rlorch\Desktop\CellModelREU')
 c = initializeNetwork(outerNodeCount);
 c_def = deformCellForce(c, 1:outerNodeCount, [forcesX;forcesY]', [11,12], [11,12]);
 plotCell(c_def);
