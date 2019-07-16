@@ -30,12 +30,12 @@ function status = plotCellWrapper(t, y, flag, externalNodeCount, simulationType,
       end
     
       if exist('yOld', 'var') 
-        cellInfo.xVelocity = (y(1:2:end) - yOld(1:2:end))/(t - tOld);
-        cellInfo.yVelocity = (y(2:2:end) - yOld(2:2:end))/(t - tOld);
+        cellInfo.xVelocity = (y(1:2:end,1) - yOld(1:2:end,1))/(t(1) - tOld(1));
+        cellInfo.yVelocity = (y(2:2:end,1) - yOld(2:2:end,1))/(t(1) - tOld(1));
       end
       
-      cellInfo.xPosition = y(1:2:end);
-      cellInfo.yPosition = y(2:2:end);
+      cellInfo.xPosition = y(1:2:end,1);
+      cellInfo.yPosition = y(2:2:end,1);
       plotCell(cellInfo)
       drawnow;
     end
