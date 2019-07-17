@@ -84,7 +84,7 @@ function force = calculateForce(positions, nodeNum, cellInfoRef)
   force = force + cellInfoRef.externalForces(nodeNum,:);
   
   % calculate and incorporate the force from the wall, if applicable
-  if strcmp(cellInfo.simulationType, 'wall')
+  if strcmp(cellInfoRef.simulationType, 'wall')
     wallForceMag = 1000; % Magnitude of force from wall
     [dists,dot_dist,overlap,norm_x,norm_y,norm_arc,type] = dist_from_pt_to_line_segs(nodePos(1), nodePos(2),... 
                                                                                      cellInfoRef.xw, cellInfoRef.yw);
