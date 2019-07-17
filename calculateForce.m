@@ -83,21 +83,19 @@ function force = calculateForce(positions, nodeNum, cellInfoRef)
   % 'deformCellForce' function
   force = force + cellInfoRef.externalForces(nodeNum,:);
   
-  % calculate and incorporate the force from the wall
-  wallForceMag = 1000; % Magnitude of force from wall
-  [dists,dot_dist,overlap,norm_x,norm_y,norm_arc,type] = ...
-    dist_from_pt_to_line_segs(nodePos(1), nodePos(2), cellInfoRef.xw, cellInfoRef.yw);
-  [mindists,inds] = min(dists,[],1);
-  %lininds = sub2ind(size(dists),inds,1:cellInfoRef.totalNodeCount); % fix
-  my_eps = 0.1;
-  in_or_out = inpolygon(nodePos(1),nodePos(2),cellInfoRef.xw,cellInfoRef.yw);
-  ramp_func = @(x,e) (x > -e).*(x < 0).*(x+e).^2.*(e-2*x)./e.^3+(x >= 0);
-  fxnwf = (wallForceMag*(norm_x(inds).*...
-    ramp_func((1-2*in_or_out').*mindists,my_eps)))';
-  fynwf = (wallForceMag*(norm_y(inds).*...
-    ramp_func((1-2*in_or_out').*mindists,my_eps)))';
-  wallForce = [fxnwf, fynwf];
-  force = force + wallForce;
+  % calculate and incorporate the force from the wall, if applicable
+  if strcmp(cellInfoRef.simulationType, 'wall')
+    wallForceMag = 1000; % Magnitude of force from wall
+    [dists,dot_dist,overlap,norm_x,norm_y,norm_arc,type] = dist_from_pt_to_line_segs(nodePos(1), nodePos(2),... 
+                                                                                     cellInfoRef.xw, cellInfoRef.yw);
+    [mindists,inds] = min(dists,[],1);
+    my_eps = 0.1;
+    in_or_out = inpolygon(nodePos(1),nodePos(2),cellInfoRef.xw,cellInfoRef.yw);
+    ramp_func = @(x,e) (x > -e).*(x < 0).*(x+e).^2.*(e-2*x)./e.^3+(x >= 0);
+    fxnwf = (wallForceMag*(norm_x(inds).* ramp_func((1-2*in_or_out').*mindists,my_eps)))';
+    fynwf = (wallForceMag*(norm_y(inds).* ramp_func((1-2*in_or_out').*mindists,my_eps)))';
+    force = force + [fxnwf fynwf];
+  end
 end
 
 function cross = crossProd(v1, v2)

@@ -4,7 +4,7 @@ Cell is trapped in a box
 
 %}
 %% Initialization
-dt = 0.0001
+dt = 0.0001;
 dtPlot = dt * 10;
 totalTime = 0.5;
 

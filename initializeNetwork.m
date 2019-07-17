@@ -6,9 +6,11 @@ function cellInfo = initializeNetwork(externalNodeCount, simulationType, xw, yw)
     if ~exist('xw', 'var') & ~exist('yw', 'var')
       cellInfo.xw =   [-190, -150,  150, 150, 190, 190, 150, 150, -150, -190];
       cellInfo.yw = 2*[ -15, -2.5, -2.5, -15, -15,  15,  15, 2.5,  2.5,   15];
+      cellInfo.simulationType = 'wall';
     else
       cellInfo.xw = xw;
       cellInfo.yw = yw;
+      cellInfo.simulationType = 'default';
     end
     
   else
@@ -29,7 +31,7 @@ function cellInfo = initializeNetwork(externalNodeCount, simulationType, xw, yw)
   cellInfo.k_bi = 0;
   
   % distance from center to the external nodes
-  cellInfo.internalRefLength = sqrt(2*pi*cellInfo.radius^2/cellInfo.externalNodeCount/sin(2*pi/cellInfo.externalNodeCount)); 
+  cellInfo.internalRefLength = cellInfo.radius; 
   cellInfo.externalRefLength = 2*sin(2*pi/cellInfo.externalNodeCount/2)*cellInfo.internalRefLength;
   
   % set up outer circle

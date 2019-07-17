@@ -1,13 +1,17 @@
 %{
 Main function for finding the steady state for the system of viscoelastic
 elements. Still unsure of parameters/return variables.
+
+NOTE: The steady state solver interprets the fixed X values as the fixed
+nodes (i.e., you have to fix the node in both directions, specified by the
+first column in isFixed, second column is currently unused)
 %}
 function cellInfoNew = findSteadyState(cellInfo) 
   cellInfo.modelType = "steadyStateSolver";
   % set initial guess
   x_0 = [cellInfo.xPosition, cellInfo.yPosition];
   
-  options = optimoptions(@fsolve,'MaxFunctionEvaluations', 100000, 'MaxIterations', 10000)
+  options = optimoptions(@fsolve,'MaxFunctionEvaluations', 1000000, 'MaxIterations', 10000)
   [newPositions, forceValues] = fsolve(@(x) calcAllForces(x, cellInfo), x_0, options);
   
   % use positions to create cellInfoNew, which is the cell at steady state
