@@ -15,7 +15,7 @@ function status = plotCellWrapper(t, y, flag, externalNodeCount, simulationType,
   persistent tOld
   
   % only plot every 15 steps  
-  if mod(n, 15) == 0
+  if mod(n, 5) == 0
     if strcmp(flag, 'init') || strcmp(flag, 'done')
       % do nothing
     else

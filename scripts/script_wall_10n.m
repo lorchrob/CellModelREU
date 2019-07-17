@@ -16,7 +16,7 @@ totalTime = 0.5;
 c = initializeNetwork(10, 'wall');
 c_def = deformCellDisplacement(c, [], [], [12,11], [13]);
 c_def.noMeanXChange = true;
-c_def.noMeanYChange = true;
+% c_def.noMeanYChange = true;
 plotCell(c_def)
 
 %%

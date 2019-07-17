@@ -4,6 +4,7 @@
 externalNodeCount = 20;
 r = initializeNetwork(externalNodeCount, 'wall');
 r_def = deformCellDisplacement(r, [], [], [21], [21 1 11]);
+r_def.noMeanXChange = true;
 
 %% Init 2 (stretched between 2 fixed points)
 externalNodeCount = 10;
@@ -34,9 +35,9 @@ r_def = deformCellDisplacement(r, [2], [3 3], [1 4], [1 4]);
 pos0 = zeros(r_def.totalNodeCount*2,1);
 pos0(1:2:end) = r_def.xPosition;
 pos0(2:2:end) = r_def.yPosition;
-options = odeset('OutputFcn', @(t, y, flag) plotCellWrapper(t, y, flag, externalNodeCount, 'wall', 'timeStepper'));
+options = odeset('OutputFcn', @(t, y, flag) plotCellWrapper(t, y, flag, externalNodeCount, 'noWall', 'timeStepper'));
 
-[t,pos] = ode15s(@(t,x) getVelocities(x, r_def), [0, 100], pos0, options);
+[t,pos] = ode45(@(t,x) getVelocities(x, r_def), [0, 0.3], pos0, options);
 
 %% Storage
  r_new = r;
