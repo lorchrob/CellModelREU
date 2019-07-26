@@ -1,9 +1,11 @@
 % Script to initialize a network, deform it, and call ode15s to solve the
 % velocity system. Also plots. 
+% NOTE: For simulations without a wall, alter the 'wall' argument in ode15s
+% to 'noWall' (or literally anything else)
 %% Init 1 (squeezed by walls on top and bottom)
 externalNodeCount = 20;
 r = initializeNetwork(externalNodeCount, 'wall');
-r_def = deformCellDisplacement(r, [], [], [21], [21 1 11]);
+r_def = deformCellDisplacement(r, [], [], [36] , [36,1,11]);
 r_def.noMeanXChange = true;
 
 %% Init 2 (stretched between 2 fixed points)
@@ -35,7 +37,7 @@ r_def = deformCellDisplacement(r, [2], [3 3], [1 4], [1 4]);
 pos0 = zeros(r_def.totalNodeCount*2,1);
 pos0(1:2:end) = r_def.xPosition;
 pos0(2:2:end) = r_def.yPosition;
-options = odeset('OutputFcn', @(t, y, flag) plotCellWrapper(t, y, flag, externalNodeCount, 'noWall', 'timeStepper'));
+options = odeset('OutputFcn', @(t, y, flag) plotCellWrapper(t, y, flag, externalNodeCount, 'wall', 'timeStepper'));
 
 [t,pos] = ode15s(@(t,x) getVelocities(x, r_def), [0, 10], pos0, options);
 
