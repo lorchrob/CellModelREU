@@ -1,5 +1,5 @@
 %{
-Wrapper functino for plotCell (i.e., its only job is to call plotCell).
+Wrapper function for plotCell (i.e., its only job is to call plotCell).
 Set up to be called by the ode solvers.
 %}
 function status = plotCellWrapper(t, y, flag, externalNodeCount, simulationType, modelType)

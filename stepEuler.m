@@ -1,6 +1,13 @@
 %{
 Simple function to time step, using Euler's method. t_0 (initial time) is
 assumed to be 0).
+
+Arguments:
+  * cellInfo: created by 'initializeNetwork', modified by
+              'deformCellDisplacement' or 'deformCellForce'
+  * dt: time step size
+  * totalTime: self explanatory
+  * dtPlot: how often to plot the cell 
 %}
 function cellInfoNew = stepEuler(cellInfo, dt, totalTime, dtPlot) 
   cellInfo.modelType = "timeStepper";

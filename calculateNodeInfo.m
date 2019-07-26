@@ -1,5 +1,8 @@
 %{
-Function to calculate more info about the cell (adapted from Barber)
+Function to calculate more info about the cell (adapted from Barber).
+
+Called automatically by 'initializeNetwork', 'findSteadyState', and
+'getVelocities' (during time integration). 
 %}
 function cellInfo = calculateNodeInfo(cellInfo)
   %  Because this info is stored for each node, some info is redundant. For

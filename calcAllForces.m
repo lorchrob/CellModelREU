@@ -1,6 +1,10 @@
 %{
 Function to calculate all forces in the network, to be used by 'fsolve'
-function. Puts forces into column vector.
+function. Puts forces into column vector. Called by 'findSteadyState'
+function.
+
+'noMeanXChange' and 'noMeanYChange' not yet implemented for steady state
+solver, but they shouldn't be too complicated.
 %}
 function allForces = calcAllForces(positions, cellInfo)
   allForces = zeros(cellInfo.totalNodeCount, 2);

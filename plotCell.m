@@ -1,6 +1,7 @@
 %{
-Function to plot a cell with a red membrane and a blue interior
-%}
+Function to plot a cell. To change colors, change the last parameter to the
+'plot' calls.
+ %}
 function plotCell(cellInfo)
 
   minX = min(cellInfo.xPosition);

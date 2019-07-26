@@ -1,5 +1,5 @@
 %{
-Function from Barber.
+Function from Barber. Helper function to help calculate wall force.
 %}
 function [dists,dot_dist,overlap,norm_x,norm_y,norm_arc,type] = ...
   dist_from_pt_to_line_segs(pts_xs,pts_ys,lseg_xs,lseg_ys)

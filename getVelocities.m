@@ -1,5 +1,6 @@
 %{
-Using velocity system, returns velocities when given positions
+Using velocity system, returns velocities when given positions. Called by
+the ODE solver during time integration.
 
 Takes in:
   - new nodal positions (usually inputed from ODE solver)
@@ -9,7 +10,6 @@ Outputs:
   - 'cellInfo' structure with updated information
       (i.e. lengths, angles, tangent vectors, normal vectors, external
       forces, etc.)
-
 
 Note: 
 The 'cellInfo' passed in through argument does NOT have updated

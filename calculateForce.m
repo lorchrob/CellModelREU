@@ -1,6 +1,10 @@
 %{
 Function to calculate the total force acting on a node. At steady
-state, this function should equal 0.
+state, this function should equal 0. Called by 'calcAllForces', which is
+called by 'findSteadyState'.
+
+NOTE: The section dealing with wall forces is not fully tested (but, the code for
+that section is essentially copy/pasted from Barber, so it's probably ok). 
 %}
 function force = calculateForce(positions, nodeNum, cellInfoRef)
 % first, determine if node is internal or external, and then solve the

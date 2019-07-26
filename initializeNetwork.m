@@ -1,5 +1,13 @@
 %{
-Main function to initialize the system
+Main function to initialize the system.
+
+Arguments:
+  * externalNodeCount: the number of external nodes
+  * simulationType: the type of system (OPTIONAL)
+    - should be 'wall' if you want the cell to be squeezed by walls
+  * xw: x wall coordinations (OPTIONAL)
+    - only for if simulationType is 'wall'
+  * yw: similar to xw, but for y (OPTIONAL)
 %}
 function cellInfo = initializeNetwork(externalNodeCount, simulationType, xw, yw)  
   if exist('simulationType', 'var') && strcmp(simulationType, 'wall')
