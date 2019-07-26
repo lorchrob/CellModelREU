@@ -96,8 +96,8 @@ function cellInfo = setupInteriorNodes(cellInfo)
   [dl,bt] = decsg(boungeominfo,setformulas,nameofbound);
   model = createpde;
   geometryFromEdges(model, dl);
-  generateMesh(model, 'Hmax', 7.7, 'Hmin', 7.4, 'Hgrad', 1,...
-    'GeometricOrder', 'linear'); %cellInfo.externalRefLength for both
+  generateMesh(model, 'Hmax', cellInfo.externalRefLength, 'Hmin', cellInfo.externalRefLength, 'Hgrad', 1,...
+    'GeometricOrder', 'linear'); 
     
   tol = 1e-12;
   [a,b] = ismembertol([cellInfo.xPosition, cellInfo.yPosition], model.Mesh.Nodes', tol, 'ByRows', true);
