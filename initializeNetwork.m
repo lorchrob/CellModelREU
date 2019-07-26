@@ -5,17 +5,17 @@ function cellInfo = initializeNetwork(externalNodeCount, simulationType, xw, yw)
   if exist('simulationType', 'var') && strcmp(simulationType, 'wall')
     if ~exist('xw', 'var') & ~exist('yw', 'var')
       cellInfo.xw =   [-190, -150,  150, 150, 190, 190, 150, 150, -150, -190];
-      cellInfo.yw = 2*[ -15, -2.5, -2.5, -15, -15,  15,  15, 2.5,  2.5,   15];
-      cellInfo.simulationType = 'wall';
+      cellInfo.yw = 2*[ -15, -2.5, -2.5, -15, -15,  15,  15, 2.5,  2.5,   15];   
     else
       cellInfo.xw = xw;
-      cellInfo.yw = yw;
-      cellInfo.simulationType = 'default';
+      cellInfo.yw = yw;      
     end
+    cellInfo.simulationType = 'wall';
     
   else
     cellInfo.xw = [-500,  500, 500, -500]; % defaults to a square with length 1000
     cellInfo.yw = [-500, -500, 500,  500];
+    cellInfo.simulationType = 'default';
   end
 
   % set initial values for some fields of the 'cellInfo' struct
@@ -24,14 +24,14 @@ function cellInfo = initializeNetwork(externalNodeCount, simulationType, xw, yw)
   cellInfo.refArea = pi*cellInfo.radius^2;
   % underscores represent subscripts
   cellInfo.k_te = 1200; %1200
-  cellInfo.k_ti = 900; %1200
+  cellInfo.k_ti = 1200; %1200
   cellInfo.mu_e = 200; %200
   cellInfo.mu_i = 100; %100
   cellInfo.k_be = 90; %90
   cellInfo.k_bi = 0;
   
   % distance from center to the external nodes
-  cellInfo.internalRefLength = cellInfo.radius; 
+  cellInfo.internalRefLength = sqrt(2*pi*cellInfo.radius^2/cellInfo.externalNodeCount/sin(2*pi/cellInfo.externalNodeCount)); 
   cellInfo.externalRefLength = 2*sin(2*pi/cellInfo.externalNodeCount/2)*cellInfo.internalRefLength;
   
   % set up outer circle
@@ -96,7 +96,7 @@ function cellInfo = setupInteriorNodes(cellInfo)
   [dl,bt] = decsg(boungeominfo,setformulas,nameofbound);
   model = createpde;
   geometryFromEdges(model, dl);
-  generateMesh(model, 'Hmax', cellInfo.externalRefLength, 'Hmin', cellInfo.externalRefLength, 'Hgrad', 1,...
+  generateMesh(model, 'Hmax', 7.7, 'Hmin', 7.4, 'Hgrad', 1,...
     'GeometricOrder', 'linear'); %cellInfo.externalRefLength for both
     
   tol = 1e-12;

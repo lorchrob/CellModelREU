@@ -37,7 +37,7 @@ pos0(1:2:end) = r_def.xPosition;
 pos0(2:2:end) = r_def.yPosition;
 options = odeset('OutputFcn', @(t, y, flag) plotCellWrapper(t, y, flag, externalNodeCount, 'noWall', 'timeStepper'));
 
-[t,pos] = ode45(@(t,x) getVelocities(x, r_def), [0, 0.3], pos0, options);
+[t,pos] = ode15s(@(t,x) getVelocities(x, r_def), [0, 10], pos0, options);
 
 %% Storage
  r_new = r;

@@ -5,9 +5,12 @@ Set up to be called by the ode solvers.
 function status = plotCellWrapper(t, y, flag, externalNodeCount, simulationType, modelType)
   % 'n' used to keep track of the iteration so that we don't have to plot
   % every time
-  persistent n
-  if isempty(n)
-      n = 0;
+  
+  % weird variable name intended to make sure the global variable
+  % isn't affected by anything else
+  persistent n12
+  if isempty(n12)
+      n12 = -1;
   end
   
   % aren't defined until the end, used for calculating velocities
@@ -15,7 +18,7 @@ function status = plotCellWrapper(t, y, flag, externalNodeCount, simulationType,
   persistent tOld
   
   % only plot every 15 steps  
-  if mod(n, 5) == 0
+  if mod(n12, 5) == 0
     if strcmp(flag, 'init') || strcmp(flag, 'done')
       % do nothing
     else
@@ -41,7 +44,7 @@ function status = plotCellWrapper(t, y, flag, externalNodeCount, simulationType,
     end
   end
   
-  n = n + 1;
+  n12 = n12 + 1;
   status = 0;
   
   yOld = y;
